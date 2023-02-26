@@ -2,19 +2,18 @@
 Returns a heap */
 
 #include <stdio.h>
-#include <heap.h>
-#include <counter.h> /* add_to_list, heap_t */
+#include <stdlib.h>
+#include "heap.h"
+#include "counter.h" /* add_to_list, heap_t */
 
 /* Searches the list for two smallest numbers.
 If list is one node large, the second number will be returned as a 0 */
-int *2_min_numbers(heap_t list) {
-	int min_nmbr[2];
-	int min_nmbr[0] = list->amount;
-	int min_nmbr[1] = 0;
+void two_min_numbers(heap_t list, int *min_nmbr) {
+	min_nmbr[0] = list->amount;
+	min_nmbr[1] = 0;
 	if(list->next == NULL) /* list is one node large */
-		return min_nmbr;
+		return;
 	/* !scan the list and write two smallest numbers into int min_nmbr[2] */
-	return min_nmbr;
 }
 
 /* Takes and returns targeted node from list.
@@ -33,26 +32,26 @@ heap_t take_from_list(heap_t list, int target_nmbr) {
 /* Converts list into heap */
 void organize_heap(heap_t list) {
 	int min1, min2;
-	int *min_nmbr = 2_min_numbers(list);
+	int min_nmbr[1];
+	two_min_numbers(list, min_nmbr);
 	min1 = min_nmbr[0];
 	min2 = min_nmbr[1];
 	/* if min2 is equal to 0, that means our list is one node large a.k.a. we finished our heap */
 	while(min2 != 0) {
 		heap_t passage_0 = take_from_list(list, min1);
 		heap_t passage_1 = take_from_list(list, min2);
-		heap_t blank_node;
+		heap_t blank_node = malloc(sizeof(*blank_node));
 		/* its purpose is to connect two nodes in heap. Visual interpretation:
 		blank_node
 		   /   \
-		  a     b */
-		
-		blank_node->symbol = NULL;
+		  a     b */	
+		blank_node->symbol = '\0';
 		blank_node->amount = min1+min2;
-		blank_node->pasage_0 = passage_0;
-		blank_node->pasage_1 = passage_1;
+		blank_node->passage_0 = passage_0;
+		blank_node->passage_1 = passage_1;
 		add_to_list(list, blank_node);
 		
-		min_nmbr = 2_min_numbers(list);
+		two_min_numbers(list, min_nmbr);
 		min1 = min_nmbr[0];
 		min2 = min_nmbr[1];
 	}

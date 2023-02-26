@@ -1,8 +1,8 @@
 /* Used for compressing/decompressing files. */
 
 #include <stdio.h>
-#include <compressor.h>
-#include <csheet.h> /* csheet_t */
+#include "compressor.h"
+#include "csheet.h" /* csheet_t */
 #include <stdlib.h> /* fprintf, strtol */
 
 /* Converts binary code into a character and writes it in 'out' file */
@@ -20,11 +20,12 @@ void char_into_binary(char c, char *binary) { /* *binary has to be binary[8] */
 }
 
 /* Checks if binary is full and if so, write it as a char into 'out' file */
-void check_overflow( int pos, char *binary, FILE *out) {
+int check_overflow( int pos, char *binary, FILE *out) {
 	if(pos>7) {
 		binary_into_char(binary, out);
-		pos = 0;
+		return 1;
 	}
+	return 0;
 }
 
 /* Reads the 'in' file and using the csheet compresses it into 'out' file */
@@ -47,20 +48,20 @@ void compress (FILE *in, csheet_t csheet, FILE *out) {
 			/* writing in binary the length of code into 'out' file,
 			e.g.: 4 = 1110; 3 = 110; 2 = 10; 1 = 0 */
 			int i=0;
-			while(tmp->code[i++] != NULL) {
+			while(tmp->code[i++] != '\0') {
 				data[pos++] = '1';
-				check_overflow(&pos, data, out);
+				pos = check_overflow(pos, data, out) ? 0 : pos;
 			}
 			data[pos] = '0';
 			/* writing code in binary into 'out' file */
-			int i=0;
-			while(tmp->code[i] != NULL) {
+			i=0;
+			while(tmp->code[i] != '\0') {
 				data[pos++] = tmp->code[i++];
-				check_overflow(&pos, data, out);
+				pos = check_overflow(pos, data, out) ? 0 : pos;
 			}
 			while(pos!=0) { /* making sure the last byte is full */
 				data[pos++]='1';
-				check_overflow(&pos, data, out);
+				pos = check_overflow(pos, data, out) ? 0 : pos;
 			}
 		}
 		else
@@ -73,11 +74,11 @@ void compress (FILE *in, csheet_t csheet, FILE *out) {
 
 /* Reads the 'in' file, gets the csheet from 'in' file and decoompresses it into 'out' file */
 void decompress (FILE *in, FILE *out) {
-	csheet_t csheet;
+	/*csheet_t csheet;*/
 	/* !scan 'in' file and copy the csheet,
 	a NULL character (00000000) marks the end of the csheet,
 	if there are any problems with this end the process and write an error */
-	int error_count = 0;
+	/*int error_count = 0;*/
 	/* !scan 'in' file until you encounter a '0',
 	the length of each character found (including 0) is the length of the "code",
 	look for it in csheet,
