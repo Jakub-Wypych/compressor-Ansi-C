@@ -8,50 +8,63 @@
 
 int main (int argc, char **argv) {
 	int opt;
-	while ((opt = getopt(argc, argv, "hvi:o:")) != -1) {
+	int decomp = 0;
+	int VERBOSE = 0;
+	FILE *in = NULL;
+	FILE *out = NULL;
+	heap_t heap;
+	csheet_t csheet;
+	while ((opt = getopt(argc, argv, "dhvi:o:")) != -1) {
 		switch (opt) {
-			case 'h': {  /* help */
-					  printf("\n"); /* !finish writing help */
-					  return 0;
-				  }
-			case 'v': {
-					  #define VERBOSE
-					  break;
-				  }
-			case 'i': { /* (i)nput file */
-					  FILE *in = fopen(optarg, "r"); /* !check if readable and act accordingly */
-					  if(in==NULL) {
-						  fprintf(stderr,"ERROR: Failure to read %s\n", optarg);
-						  return 1;
-					  }
-					  break;
-				  }
-			case 'o': { /* (o)utput file */
-					  FILE *out = fopen(optarg, "w"); /* !check if writable and act accordingly */
-					  if(out==NULL) {
-						  fprintf(stderr,"ERROR: Failure to read %s\n", optarg);
-						  return 1;
-					  }
-					  break;
-				  }
-			case '?': {
-					  printf("Unknown option: %c\n", optopt);
-					  return 1;
-				  }
+			case 'h':  /* help */
+				printf("\n"); /* !finish writing help */
+				return 0;
+				break;
+			case 'v':
+				VERBOSE = 1;
+				break;
+			case 'd':
+				decomp = 1; /* we'll be decompressing the infile */
+				break;
+			case 'i': /* (i)nput file */
+				in = fopen(optarg, "r");
+				if(in==NULL) {
+					fprintf(stderr,"ERROR: Failure to read %s\n", optarg);
+					return 1;
+					}
+				break;
+			case 'o': /* (o)utput file */
+				out = fopen(optarg, "w");
+				if(out==NULL) {
+					fprintf(stderr,"ERROR: Failure to read %s\n", optarg);
+					return 1;
+				}
+				break;
+			case '?':
+				fprintf(stderr,"Unknown option: %c\n", optopt);
+				return 1;
+				break;
 		}
 	}
-	/* !depending on option compress or decompress */
-	/*decompress(in, out);
-	fclose(in);
-	fclose(out);
-	return 0;
-	
-	heap_t heap = count_symbols(in);
-	organize_heap(heap);
-	csheet_t csheet = make_cmprs_list(heap);
-	compress(in, csheet, out);
-	fclose(in);
-	fclose(out);
-	return 0;*/
+	if(in==NULL || out==NULL) {
+		fprintf(stderr, "ERROR: No input/output file given. Please refer to help (-h)\n");
+		return 1;
+	}
+	if(decomp) {
+	        decompress(in, out, VERBOSE);
+	        fclose(in);
+		fclose(out);
+	}
+	else {
+		if(VERBOSE)
+			fprintf(stderr, "MAIN.C: Beginning the compression process...\n");
+		heap = count_symbols(in, VERBOSE);
+		organize_heap(heap, VERBOSE);
+       		csheet = make_cmprs_list(heap, VERBOSE);
+        	compress(in, csheet, out, VERBOSE);
+        	fclose(in);
+        	fclose(out);
+		/* !need to free csheet and heap */
+	}
 	return 0;
 }

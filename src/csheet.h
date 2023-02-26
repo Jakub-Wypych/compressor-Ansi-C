@@ -14,6 +14,6 @@ typedef struct csheet {
 } *csheet_t;
 
 void cmprs_list (char *code, heap_t pos, csheet_t csheet); /* main function for making a csheet from heap */
-csheet_t make_cmprs_list(heap_t heap); /* initiallises the process of making csheet from heap */
+csheet_t make_cmprs_list(heap_t heap, int VERBOSE); /* initiallises the process of making csheet from heap */
 
 #endif

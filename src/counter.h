@@ -4,7 +4,7 @@ Returns a list of symbols and how many times they occured */
 #ifndef _COUNTER_H_IS_INCLUDED_
 #define _COUNTER_H_IS_INCLUDED_
 
-#define MAX_COUNT 255
+#define MAX_COUNT 256
 
 /* This structure has a dual purpose:
 1. It can be used as a list which stores a symbol (char) and its amount (int)
@@ -17,8 +17,8 @@ typedef struct heap {
 	struct heap *passage_1; /* heap (2.) */
 } *heap_t;
 
-heap_t count_symbols(FILE *in); /* counts symbols in FILE */
+heap_t count_symbols(FILE *in, int VERBOSE); /* counts symbols in FILE */
 void add_to_list(heap_t list, heap_t node); /* adds node to the end of list */
-heap_t array_to_list(int *array); /* converts array into list */
+heap_t array_to_list(int *array, int VERBOSE); /* converts array into list */
 
 #endif

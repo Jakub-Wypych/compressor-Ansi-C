@@ -29,13 +29,15 @@ int check_overflow( int pos, char *binary, FILE *out) {
 }
 
 /* Reads the 'in' file and using the csheet compresses it into 'out' file */
-void compress (FILE *in, csheet_t csheet, FILE *out) {
+void compress (FILE *in, csheet_t csheet, FILE *out, int VERBOSE) {
 	int error_count = 0;
 	char data[8];
 	int pos = 0; /* current position in data[8] */
 	/* !write the csheet into the 'out' file,
 	end it with a NULL char (00000000) */
 	char c;
+	if(VERBOSE)
+		fprintf(stderr, "COMPRESSOR.C: Beginning to compress...\n");
 	while( (c = fgetc(in)) != EOF ) {
 		/* searching for the char c in csheet */
 		csheet_t tmp = csheet;
@@ -67,18 +69,19 @@ void compress (FILE *in, csheet_t csheet, FILE *out) {
 		else
 			error_count++; /* we didn't find the char in csheet, we skip it */
 	}
-#ifdef VERBOSE
-	fprintf(stderr, "Error count while compressing: %d\n", error_count);
-#endif
+	if(VERBOSE)
+		fprintf(stderr, "COMPRESSOR.C: Finished compressing! Error count while compressing: %d\n", error_count);
 }
 
 /* Reads the 'in' file, gets the csheet from 'in' file and decoompresses it into 'out' file */
-void decompress (FILE *in, FILE *out) {
+void decompress (FILE *in, FILE *out, int VERBOSE) {
 	/*csheet_t csheet;*/
+	int error_count = 0;
+	if(VERBOSE)
+                fprintf(stderr, "COMPRESSOR.C: Beginning to decompress...\n");
 	/* !scan 'in' file and copy the csheet,
 	a NULL character (00000000) marks the end of the csheet,
 	if there are any problems with this end the process and write an error */
-	/*int error_count = 0;*/
 	/* !scan 'in' file until you encounter a '0',
 	the length of each character found (including 0) is the length of the "code",
 	look for it in csheet,
@@ -86,7 +89,6 @@ void decompress (FILE *in, FILE *out) {
 	/* !if the string of code has a char diffrent than '0' or '1' 
 	or it's not found in csheet: error_count++,
 	then write the problematic string of code into 'out' file */
-#ifdef VERBOSE
-	fprintf(stderr, "Error count while decompressing: %d\n", error_count);
-#endif
+	if(VERBOSE)
+		fprintf(stderr, "COMPRESSOR.C: Finished decompressing! Error count while decompressing: %d\n", error_count);
 }

@@ -28,7 +28,7 @@ void cmprs_list(char *code, heap_t pos, csheet_t csheet) {
 }
 
 /* Initiallises the process of making csheet from heap */
-csheet_t make_cmprs_list(heap_t heap) {
+csheet_t make_cmprs_list(heap_t heap, int VERBOSE) {
 	/* !check if heap is one node large and act accordingly */
 	csheet_t csheet = malloc(sizeof(*csheet)); /* the first node is only a temporary node */
         /* !also rembember to free */
@@ -37,7 +37,11 @@ csheet_t make_cmprs_list(heap_t heap) {
 	for(i=0;i<8;i++)
 		code[i]='\0';
 	csheet->next = NULL;
+        if(VERBOSE)
+                fprintf(stderr,"CSHEET.C: Making a compression sheet...\n");
 	cmprs_list(code, heap, csheet);
 	csheet = csheet->next; /* we remove the temporary node */
+	if(VERBOSE)
+                fprintf(stderr,"CSHEET.C: Finished making a compression sheet!\n");
 	return csheet;
 }

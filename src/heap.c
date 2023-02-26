@@ -30,9 +30,11 @@ heap_t take_from_list(heap_t list, int target_nmbr) {
 }
 
 /* Converts list into heap */
-void organize_heap(heap_t list) {
+void organize_heap(heap_t list, int VERBOSE) {
 	int min1, min2;
-	int min_nmbr[1];
+	int min_nmbr[2];
+        if(VERBOSE)
+                fprintf(stderr, "HEAP.C: Beginning the organize heap process...\n");
 	two_min_numbers(list, min_nmbr);
 	min1 = min_nmbr[0];
 	min2 = min_nmbr[1];
@@ -55,4 +57,6 @@ void organize_heap(heap_t list) {
 		min1 = min_nmbr[0];
 		min2 = min_nmbr[1];
 	}
+	if(VERBOSE)
+		fprintf(stderr,"HEAP.C: Finished the organize process!\n");
 }

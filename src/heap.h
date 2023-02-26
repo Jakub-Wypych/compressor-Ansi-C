@@ -8,6 +8,6 @@ Returns a heap */
 
 void two_min_numbers(heap_t list, int *min_nmbr); /* searches the list for two smallest numbers */
 heap_t take_from_list(heap_t list, int target); /* takes and returns targeted node from list */
-void organize_heap(heap_t list); /* converts list into heap */
+void organize_heap(heap_t list, int VERBOSE); /* converts list into heap */
 
 #endif

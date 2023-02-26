@@ -1,16 +1,19 @@
 all:
-	gcc -Wall -ansi -pedantic src/*.c -o bin/compressor
+	cc -Wall -ansi -pedantic src/*.c -o bin/compressor
 
 gen_uncompressed_file:
-	gcc -Wall -ansi -pedantic data/gen_uncmprs_file.c -o data/gen
-	data/gen data/uncrompressed
+	cc -Wall -ansi -pedantic data/gen_uncmprs_file.c -o data/gen
+	data/gen data/uncompressed
 	rm data/gen
 
 compress_no_opt: all
-	bin/compressor data/uncrompressed data/compressed
+	bin/compressor -i data/uncompressed -o data/compressed
+
+compress_no_opt_verbose: all
+	bin/compressor -i data/uncompressed -o data/compressed -v
 
 decompress_no_opt: all
-	bin/compressor data/compressed data/decompressed
+	bin/compressor -i data/compressed -o data/decompressed -d
 
 test_compress_no_symbol: all
 	bin/compressor data/no_symbols data/decompressed
