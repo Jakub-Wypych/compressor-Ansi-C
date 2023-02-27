@@ -9,7 +9,7 @@ gen_uncompressed_file:
 compress_no_opt: all
 	bin/compressor -i data/uncompressed -o data/compressed
 
-compress_no_opt_verbose: all
+compress_verbose: all
 	bin/compressor -i data/uncompressed -o data/compressed -v
 
 decompress_no_opt: all

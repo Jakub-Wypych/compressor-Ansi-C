@@ -3,13 +3,13 @@
 #ifndef _CSHEET_H_IS_INCLUDED_
 #define _CSHEET_H_IS_INCLUDED_
 
-#define MAX_CODE 8 /* defines maximum length of code */
+#define MAX_CODE 64 /* defines maximum length of code */
 
 #include "heap.h" /* heap_t */
 
 typedef struct csheet {
 	char symbol;
-	char code[8];
+	char code[MAX_CODE];
 	struct csheet *next;
 } *csheet_t;
 

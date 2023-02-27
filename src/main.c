@@ -59,8 +59,21 @@ int main (int argc, char **argv) {
 		if(VERBOSE)
 			fprintf(stderr, "MAIN.C: Beginning the compression process...\n");
 		heap = count_symbols(in, VERBOSE);
-		organize_heap(heap, VERBOSE);
+		heap = organize_heap(heap, VERBOSE);
        		csheet = make_cmprs_list(heap, VERBOSE);
+		csheet_t tmp = csheet;
+		int counting = 1;
+		while(tmp != NULL) { /* this is for test purposes remove later or convert into VERBOSE */
+			printf("%d. symbol ascii: %d \t code: ", counting, tmp->symbol);
+			int j = 0;
+			while(tmp->code[j] != '2') {
+				printf("%c", tmp->code[j]);
+				j++;
+			}
+			printf("\n");
+			counting++;
+			tmp = tmp->next;
+		}
         	compress(in, csheet, out, VERBOSE);
         	fclose(in);
         	fclose(out);
