@@ -3,7 +3,7 @@
 #ifndef _CSHEET_H_IS_INCLUDED_
 #define _CSHEET_H_IS_INCLUDED_
 
-#define MAX_CODE 64 /* defines maximum length of code */
+#define MAX_CODE 16 /* defines maximum length of code */
 
 #include "heap.h" /* heap_t */
 

@@ -8,30 +8,32 @@
 
 int main (int argc, char **argv) {
 	int opt;
-	int decomp = 0;
+	char c;
 	int VERBOSE = 0;
 	FILE *in = NULL;
 	FILE *out = NULL;
 	heap_t heap;
 	csheet_t csheet;
-	while ((opt = getopt(argc, argv, "dhvi:o:")) != -1) {
+	while ((opt = getopt(argc, argv, "hv:i:o:")) != -1) {
 		switch (opt) {
 			case 'h':  /* help */
-				printf("\n"); /* !finish writing help */
+				printf("\ncompress -i [infile] -o [outfile] [-h|-v|-p|-L]\n"
+						"If infile is compressed, it'll be decompressed into out file, otherwise it'll compress it.\n"
+						"\t-h:\t\tprints help.\n"
+						"\t-v [value]:\t1: prints step by step process, 2: also prints csheet, 3: also prints LIST.\n"
+						"\t-p [argument]:\tadd password.\n"
+						"\t-L [value]:\t?\n"); /* ! finish -L help */
 				return 0;
-				break;
 			case 'v':
-				VERBOSE = 1;
-				break;
-			case 'd':
-				decomp = 1; /* we'll be decompressing the infile */
+				VERBOSE = atoi(optarg) == 3 ? 3 : atoi(optarg) == 2 ? 2 : 1;
+				/* 2 additionally prints csheet and 3 also prints LIST with added blank nodes */
 				break;
 			case 'i': /* (i)nput file */
 				in = fopen(optarg, "r");
 				if(in==NULL) {
 					fprintf(stderr,"ERROR: Failure to read %s\n", optarg);
 					return 1;
-					}
+				}
 				break;
 			case 'o': /* (o)utput file */
 				out = fopen(optarg, "w");
@@ -43,14 +45,16 @@ int main (int argc, char **argv) {
 			case '?':
 				fprintf(stderr,"Unknown option: %c\n", optopt);
 				return 1;
-				break;
 		}
 	}
 	if(in==NULL || out==NULL) {
 		fprintf(stderr, "ERROR: No input/output file given. Please refer to help (-h)\n");
 		return 1;
 	}
-	if(decomp) {
+	c = fgetc(in);
+	if((c == 'E' || c == 'U') && (c = fgetc(in)) == 'C') {
+		if(VERBOSE)
+			fprintf(stderr,"MAIN.C: Beginning the decompression process...\n");
 	        decompress(in, out, VERBOSE);
 	        fclose(in);
 		fclose(out);
@@ -61,18 +65,16 @@ int main (int argc, char **argv) {
 		heap = count_symbols(in, VERBOSE);
 		heap = organize_heap(heap, VERBOSE);
        		csheet = make_cmprs_list(heap, VERBOSE);
-		csheet_t tmp = csheet;
-		int counting = 1;
-		while(tmp != NULL) { /* this is for test purposes remove later or convert into VERBOSE */
-			printf("%d. symbol ascii: %d \t code: ", counting, tmp->symbol);
-			int j = 0;
-			while(tmp->code[j] != '2') {
-				printf("%c", tmp->code[j]);
-				j++;
-			}
-			printf("\n");
-			counting++;
-			tmp = tmp->next;
+		if(VERBOSE>1) {
+			csheet_t tmp = csheet; int counting = 1;
+			fprintf(stderr,"\nCSHEET");
+			do {
+                                int j = 0;
+                                fprintf(stderr, "\n%d. symbol ascii: %d \t code: ", counting++, tmp->symbol);
+                                while(tmp->code[j] != '2')
+                                        fprintf(stderr, "%c", tmp->code[j++]);
+			} while( (tmp = tmp->next) != NULL);
+			fprintf(stderr,"\n\n");
 		}
         	compress(in, csheet, out, VERBOSE);
         	fclose(in);

@@ -16,15 +16,15 @@ heap_t count_symbols (FILE *in, int VERBOSE) {
 	list->next = NULL;
 	if(VERBOSE)
 		fprintf(stderr, "COUNTER.C: Starting to count symbols...\n");
-	while( (c = fgetc(in)) != EOF ) {
+	while( (c = fgetc(in)) != EOF )
 		increase_amount_in_list(list, c);
-	}
 	tmp = list;
         list = list->next;
         free(tmp);
 	if(VERBOSE) {
 		fprintf(stderr, "COUNTER.C: Finished counting!\n");
-		print_list(list);
+		if(VERBOSE == 3)
+			print_list(list);
 	}
 	return list;
 }
@@ -32,9 +32,8 @@ heap_t count_symbols (FILE *in, int VERBOSE) {
 /* Adds the given node to the end of the given list */
 void add_to_list(heap_t list, heap_t node) {
 	heap_t tmp = list;
-	while( tmp->next != NULL) {
+	while( tmp->next != NULL)
 		tmp = tmp->next;
-	}
 	tmp->next=node;
 }
 
@@ -42,13 +41,12 @@ void add_to_list(heap_t list, heap_t node) {
 void increase_amount_in_list(heap_t list, char c) {
 	heap_t tmp = list;
 	heap_t new_node;
-	while( tmp != NULL) {
+	do {
 		if(c == tmp->symbol) {
 			tmp->amount++;
 			return;
 		}
-		tmp = tmp->next;
-	}
+	} while( (tmp = tmp->next) != NULL);
 	new_node = malloc(sizeof(*new_node));
         new_node->symbol= c;
         new_node->amount = 1;
@@ -63,11 +61,9 @@ void print_list (heap_t list) {
         heap_t tmp = list;
         int i = 1;
         fprintf(stderr, "\nLIST\n");
-        while(tmp != NULL) {
-                fprintf(stderr, "Node %d: %d %d\n", i, tmp->symbol, tmp->amount);
-                tmp = tmp->next;
-                i++;
-        }
+        do {
+                fprintf(stderr, "Node %d: %d %d\n", i++, tmp->symbol, tmp->amount);
+        } while( (tmp=tmp->next) != NULL );
         fprintf(stderr, "\n");
 }
 
