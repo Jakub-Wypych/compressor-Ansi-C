@@ -74,7 +74,7 @@ int main (int argc, char **argv) {
 			fprintf(stderr,"\nCSHEET");
 			do {
                                 int j = 0;
-                                fprintf(stderr, "\n%d. symbol ascii: %d \t code: ", counting++, tmp->symbol.numeric);
+                                fprintf(stderr, "\n%d. symbol ascii: %d\t\tcode: ", counting++, tmp->symbol.numeric);
                                 while(tmp->code[j] != '2')
                                         fprintf(stderr, "%c", tmp->code[j++]);
 			} while( (tmp = tmp->next) != NULL);

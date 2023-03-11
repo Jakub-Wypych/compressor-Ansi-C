@@ -8,11 +8,11 @@
 #include "utility.h" /* add_to_list */
 
 /* Searches the list for two smallest numbers.
- * If list is one node large, the second number will be returned as a 0 */
+ * If list is one node large, the second number will be returned as a -1 */
 void two_min_numbers(heap_t list, int *min_nmbr) {
 	heap_t tmp = list->next;
 	min_nmbr[0] = list->amount;
-	min_nmbr[1] = 0;
+	min_nmbr[1] = -1;
 	if(list->next == NULL) /* list is one node large */
 		return;
 	min_nmbr[1] = list->next->amount;
@@ -33,14 +33,16 @@ heap_t take_from_list(heap_t list, int target_nmbr) {
 	heap_t target_node = NULL;
 	heap_t back = list;
 	heap_t front = list->next;
-	do {
+	while(front != NULL && target_node == NULL) {
 		if(front->amount==target_nmbr) { /* target in middle */
 			target_node = front;
 			back->next = front->next;
+			front->next=NULL;
 			return target_node;
 		}
 		back = back->next;
-	} while( ( front = front->next) != NULL && target_node == NULL);
+		front = front->next;
+	}
 	if(front->amount == target_nmbr && target_node == NULL) { /* target at the end */
 		target_node = front;
 		back->next = NULL;
@@ -59,7 +61,7 @@ heap_t organize_heap(heap_t list, int VERBOSE) {
 	min1 = min_nmbr[0];
 	min2 = min_nmbr[1];
 	/* if min2 is equal to 0, that means our list is one node large (exlcluding "new_head") i.e. we finished our heap */
-	while(min2 != 0) {
+	while(min2 != -1) {
 		heap_t passage_0, passage_1, blank_node;
 		passage_0 = take_from_list(new_head, min1);
 		passage_1 = take_from_list(new_head, min2);

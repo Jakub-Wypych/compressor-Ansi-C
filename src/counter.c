@@ -5,6 +5,45 @@
 #include <stdlib.h>
 #include "counter.h"
 #include "utility.h"
+#include "heap.h" /* take_from_list */
+
+/* Changes amount into probability rounded to tenths and multiplies by 10 */
+void amount_to_probability(int *amount, double amount_of_all_symbols, int ten_to_the_power_of) {
+	double tmp = *amount;
+	int i;
+	tmp = tmp/amount_of_all_symbols;
+	for(i=0;i<ten_to_the_power_of;i++)
+		tmp = tmp*10;
+	*amount = tmp;
+}
+
+/* Finds the smallest number in list */
+int one_min_number(heap_t list) {
+	heap_t tmp = list;
+	int min = list->amount;
+	while( ( tmp = tmp->next) != NULL)
+		if(min > tmp->amount) {
+			min = tmp->amount;
+	}
+	return min;
+}
+
+/* Sorts given list  */
+void sort_list(heap_t list) {
+	int min;
+	heap_t new_node, tmp; 
+	heap_t sorted_list = malloc(sizeof(*sorted_list));
+	sorted_list->next = NULL;
+	while(list->next!=NULL) {
+		min = one_min_number(list->next);
+		new_node = take_from_list(list, min);
+		add_to_list(sorted_list, new_node);
+	}
+	tmp = sorted_list;
+	sorted_list = sorted_list->next;
+	free(tmp);
+	list->next = sorted_list;
+}
 
 void increase_amount_in_list(heap_t list, data_t c) {
         heap_t new_node, tmp = list;
@@ -30,6 +69,7 @@ void increase_amount_in_list(heap_t list, data_t c) {
  * if not: add it to the list.
  * returns NULL if it encounters any problems */
 heap_t count_symbols (FILE *in, int bit, int VERBOSE) {
+	int amount_of_all_symbols = 0;
         /* depending on bit create symbol using data_t */
         heap_t tmp, list = malloc(sizeof(*list)); /* tmp: first node in list is temporary, we'll need to free it later */
         data_t found_symbol;
@@ -42,6 +82,7 @@ heap_t count_symbols (FILE *in, int bit, int VERBOSE) {
                 /* getting symbol from in FILE */
                 if( (c = fgetc(in)) == 0x0A) /* in theory we should read it, but then it's impossible to read per 12 bits */
                         break;
+		amount_of_all_symbols++;
                 found_symbol.byte[1] = c;
                 if(bit==16) {
                         c = fgetc(in);
@@ -50,6 +91,7 @@ heap_t count_symbols (FILE *in, int bit, int VERBOSE) {
                                 /* !free list */
                                 return NULL;
                         }
+			amount_of_all_symbols++;
                         found_symbol.byte[0] = c;
                 } else if(bit==12) { /* when reading per 12 bits we encounter the problem of "half byte", so we need to act accordingly */
                         if(half_char != 0x00) {
@@ -59,6 +101,12 @@ heap_t count_symbols (FILE *in, int bit, int VERBOSE) {
                                 half_char = 0x00;
                         } else {
                                 c = fgetc(in);
+				if(c==EOF) {
+                                	fprintf(stderr,"ERROR: Given file can't be read per 12 bits\n");
+                               		/* !free list */
+                                	return NULL;
+				}
+				amount_of_all_symbols++;
                                 found_symbol.byte[0] = (c&0xF0);
                                 half_char = (c<<4);
                         }
@@ -72,9 +120,22 @@ heap_t count_symbols (FILE *in, int bit, int VERBOSE) {
                 /* !free list */
                 return NULL;
         }
+	if(VERBOSE) {
+		fprintf(stderr, "COUNTER.C: Unsorted list:\n");
+		print_list(list);
+	}
+	sort_list(list);
         tmp = list;
         list = list->next;
         free(tmp);
+	tmp = list;
+	if(VERBOSE) {
+                fprintf(stderr, "COUNTER.C: Sorted list:");
+                print_list(list);
+        }
+	do {
+		amount_to_probability(&tmp->amount, amount_of_all_symbols, 2); /* !calculate how many times we need to multiply by 10 */
+	} while( (tmp = tmp->next) != NULL);
 	if(VERBOSE) {
 		fprintf(stderr, "COUNTER.C: Finished counting!\n");
 		if(VERBOSE == 3)
