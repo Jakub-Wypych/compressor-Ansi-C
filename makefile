@@ -10,7 +10,7 @@ compress_no_opt: all
 	bin/compressor -i data/uncompressed -o data/compressed
 
 verbose: all
-	bin/compressor -i data/uncompressed -o data/compressed -v 3
+	bin/compressor -i data/uncompressed -o data/compressed -v 3 -L 1
 
 help: all
 	bin/compressor -h

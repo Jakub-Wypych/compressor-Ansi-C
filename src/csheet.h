@@ -5,10 +5,10 @@
 
 #define MAX_CODE 16 /* defines maximum length of code */
 
-#include "heap.h" /* heap_t */
+#include "counter.h" /* heap_t */
 
 typedef struct csheet {
-	char symbol;
+	data_t symbol;
 	char code[MAX_CODE];
 	struct csheet *next;
 } *csheet_t;

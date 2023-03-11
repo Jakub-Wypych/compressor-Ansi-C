@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "heap.h"
-#include "counter.h" /* add_to_list, heap_t */
+#include "counter.h" /* heap_t */
+#include "utility.h" /* add_to_list */
 
 /* Searches the list for two smallest numbers.
  * If list is one node large, the second number will be returned as a 0 */
@@ -63,7 +64,7 @@ heap_t organize_heap(heap_t list, int VERBOSE) {
 		passage_0 = take_from_list(new_head, min1);
 		passage_1 = take_from_list(new_head, min2);
 		if(new_head->next == NULL) { /* list was two node large, excluding "new_head" */
-			new_head->symbol = '\0';
+			new_head->symbol.numeric = 0;
 			new_head->amount = passage_0->amount + passage_1->amount;
 			new_head->passage_0 = passage_0;
 			new_head->passage_1 = passage_1;
@@ -77,14 +78,14 @@ heap_t organize_heap(heap_t list, int VERBOSE) {
 		blank_node
 		   /   \
 		  a     b */
-		blank_node->symbol = '\0';
+		blank_node->symbol.numeric = 0;
 		blank_node->amount = passage_0->amount + passage_1->amount;
 		blank_node->next = NULL;
 		blank_node->passage_0 = passage_0;
 		blank_node->passage_1 = passage_1;
 		if(VERBOSE == 3)
 			fprintf(stderr, "HEAP.C: Made blank node. "
-					"Amount: %d. Passage_0: %d. Passage_1: %d\n", blank_node->amount, blank_node->passage_0->symbol, blank_node->passage_1->symbol);
+					"Amount: %d. Passage_0: %d. Passage_1: %d\n", blank_node->amount, blank_node->passage_0->symbol.numeric, blank_node->passage_1->symbol.numeric);
 		add_to_list(new_head, blank_node);
 
 		two_min_numbers(new_head->next, min_nmbr);

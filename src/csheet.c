@@ -11,7 +11,7 @@ void cmprs_list(char *code, heap_t pos, csheet_t csheet) {
 	char code_copy[MAX_CODE];
 	int depth = 0;
 	strcpy(code_copy, code);
-	if(pos->symbol != '\0') {
+	if(pos->symbol.numeric != 0) {
 		csheet_t tmp = csheet;
 		csheet_t new_node = malloc(sizeof(*new_node));
 		new_node->next = NULL;

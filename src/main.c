@@ -7,14 +7,13 @@
 #include <getopt.h> /* getopt */
 
 int main (int argc, char **argv) {
-	int opt;
 	char c;
-	int VERBOSE = 0;
+	int opt, VERBOSE = 0, L = 8;
 	FILE *in = NULL;
 	FILE *out = NULL;
 	heap_t heap;
 	csheet_t csheet;
-	while ((opt = getopt(argc, argv, "hv:i:o:")) != -1) {
+	while ((opt = getopt(argc, argv, "hL:v:i:o:")) != -1) {
 		switch (opt) {
 			case 'h':  /* help */
 				printf("\ncompress -i [infile] -o [outfile] [-h|-v|-p|-L]\n"
@@ -22,7 +21,7 @@ int main (int argc, char **argv) {
 						"\t-h:\t\tprints help.\n"
 						"\t-v [value]:\t1: prints step by step process, 2: also prints csheet, 3: also prints LIST.\n"
 						"\t-p [argument]:\tadd password.\n"
-						"\t-L [value]:\t?\n"); /* ! finish -L help */
+						"\t-L [value]:\t1: reads per byte, 2: reads per 12 bits, 3: reads per 2 bytes\n"); /* ! finish -L help */
 				return 0;
 			case 'v':
 				VERBOSE = atoi(optarg) == 3 ? 3 : atoi(optarg) == 2 ? 2 : 1;
@@ -41,6 +40,9 @@ int main (int argc, char **argv) {
 					fprintf(stderr,"ERROR: Failure to read %s\n", optarg);
 					return 1;
 				}
+				break;
+			case 'L':
+				L = atoi(optarg) == 3 ? 16 : atoi(optarg) == 2 ? 12 : 8;
 				break;
 			case '?':
 				fprintf(stderr,"Unknown option: %c\n", optopt);
@@ -62,7 +64,9 @@ int main (int argc, char **argv) {
 	else {
 		if(VERBOSE)
 			fprintf(stderr, "MAIN.C: Beginning the compression process...\n");
-		heap = count_symbols(in, VERBOSE);
+		heap = count_symbols(in, L, VERBOSE); /* !set option for bit size */
+		if(heap == NULL)
+			return 1;
 		heap = organize_heap(heap, VERBOSE);
        		csheet = make_cmprs_list(heap, VERBOSE);
 		if(VERBOSE>1) {
@@ -70,7 +74,7 @@ int main (int argc, char **argv) {
 			fprintf(stderr,"\nCSHEET");
 			do {
                                 int j = 0;
-                                fprintf(stderr, "\n%d. symbol ascii: %d \t code: ", counting++, tmp->symbol);
+                                fprintf(stderr, "\n%d. symbol ascii: %d \t code: ", counting++, tmp->symbol.numeric);
                                 while(tmp->code[j] != '2')
                                         fprintf(stderr, "%c", tmp->code[j++]);
 			} while( (tmp = tmp->next) != NULL);

@@ -31,44 +31,8 @@ int check_overflow( int pos, char *binary, FILE *out) {
 /* Reads the 'in' file and using the csheet compresses it into 'out' file */
 void compress (FILE *in, csheet_t csheet, FILE *out, int VERBOSE) {
 	int error_count = 0;
-	char data[8];
-	int pos = 0; /* current position in data[8] */
-	/* !write the csheet into the 'out' file,
-	end it with a NULL char (00000000) */
-	char c;
 	if(VERBOSE)
 		fprintf(stderr, "COMPRESSOR.C: Beginning to compress...\n");
-	while( (c = fgetc(in)) != EOF ) {
-		/* searching for the char c in csheet */
-		csheet_t tmp = csheet;
-		while( (tmp = tmp->next) != NULL ) {
-			if( c == tmp->symbol)
-				break;
-		}
-		/* checking if we found the character */
-		if(tmp != NULL) {
-			/* writing in binary the length of code into 'out' file,
-			e.g.: 4 = 1110; 3 = 110; 2 = 10; 1 = 0 */
-			int i=0;
-			while(tmp->code[i++] != '\0') {
-				data[pos++] = '1';
-				pos = check_overflow(pos, data, out) ? 0 : pos;
-			}
-			data[pos] = '0';
-			/* writing code in binary into 'out' file */
-			i=0;
-			while(tmp->code[i] != '\0') {
-				data[pos++] = tmp->code[i++];
-				pos = check_overflow(pos, data, out) ? 0 : pos;
-			}
-			while(pos!=0) { /* making sure the last byte is full */
-				data[pos++]='1';
-				pos = check_overflow(pos, data, out) ? 0 : pos;
-			}
-		}
-		else
-			error_count++; /* we didn't find the char in csheet, we skip it */
-	}
 	if(VERBOSE)
 		fprintf(stderr, "COMPRESSOR.C: Finished compressing! Error count while compressing: %d\n", error_count);
 }
