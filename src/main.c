@@ -4,6 +4,7 @@
 #include "heap.h" /* organize_heap */
 #include "csheet.h" /* make_cmprs_list */
 #include "compressor.h" /* compress, decompress */
+#include "utility.h" /* free_csheet_t */
 #include <getopt.h> /* getopt */
 
 int main (int argc, char **argv) {
@@ -28,14 +29,14 @@ int main (int argc, char **argv) {
 				/* 2 additionally prints csheet and 3 also prints LIST with added blank nodes */
 				break;
 			case 'i': /* (i)nput file */
-				in = fopen(optarg, "r");
+				in = fopen(optarg, "rb");
 				if(in==NULL) {
 					fprintf(stderr,"ERROR: Failure to read %s\n", optarg);
 					return 1;
 				}
 				break;
 			case 'o': /* (o)utput file */
-				out = fopen(optarg, "w");
+				out = fopen(optarg, "wb");
 				if(out==NULL) {
 					fprintf(stderr,"ERROR: Failure to read %s\n", optarg);
 					return 1;
@@ -83,7 +84,7 @@ int main (int argc, char **argv) {
         	compress(in, csheet, out, VERBOSE);
         	fclose(in);
         	fclose(out);
-		/* !need to free csheet and heap */
+		free_csheet_t(csheet);
 	}
 	return 0;
 }

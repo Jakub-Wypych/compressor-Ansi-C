@@ -6,9 +6,18 @@
 #include "heap.h" /* heap_t */
 #include <string.h> /* strcpy */
 
+/* Writes bit '1' in defined pos,
+ * where pos = < 0; 7 > */
+void write_one_in_pos(char *a, int pos) {
+	char mask = 0x40; mask <<= 1; /* 'overflow in implicit constant conversion',
+				       * I know it's stupid but I don't want to keep getting this warning */
+	mask >>= pos;
+	*a |= mask;
+}
+
 /* main function for making a csheet from heap */
 void cmprs_list(char *code, heap_t pos, csheet_t csheet) {
-	char code_copy[MAX_CODE];
+	char code_copy[MAX_CODE]; /* !fill it with 0s, but because it'll be change to read binary later it doesn't matter */
 	int depth = 0;
 	strcpy(code_copy, code);
 	if(pos->symbol.numeric != 0) {

@@ -4,9 +4,13 @@
 #define _COMPRESSOR_H_IS_INCLUDED_
 
 #include "csheet.h" /* csheet_t */
+#include "counter.h" /* data_t, heap_t */
 
-void binary_into_char (char *binary, FILE *out); /* converts binary code into a character and writes it in 'out' file */
-void char_into_binary(char c, char *binary); /* converts character into binary code */
+typedef struct dictionary {
+	data_t symbol;
+	struct dictionary *next;
+} dictionary_t;
+
 void compress (FILE *in, csheet_t csheet, FILE *out, int VERBOSE); /* reads the 'in' file and using the csheet compresses it into 'out' file */
 void decompress (FILE *in, FILE *out, int VERBOSE); /* reads the 'in' file, gets the csheet from 'in' file and decoompresses it into 'out' file */
 

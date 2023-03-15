@@ -20,3 +20,12 @@ test_compress_no_symbol: all
 
 test_compress_one_symbol: all
 	bin/compressor -i data/only_one_symbol -o data/decompressed -v 3
+
+test_12_bit: all
+	bin/compressor -i data/uncompressed -o data/compressed -v 3 -L 2
+
+test_16_bit: all
+	bin/compressor -i data/uncompressed -o data/compressed -v 3 -L 3
+
+test_memory_leak: all
+	valgrind bin/compressor -i data/uncompressed -o data/compressed -v 3 -L 1
