@@ -5,13 +5,6 @@
 #include "csheet.h" /* csheet_t */
 #include <stdlib.h>
 
-/* Adds bit 0 or 1 on the end of byte (char) */
-void add_bit_on_end(char *a, int bit) {
-	*a<<=1;
-	if(bit)
-		*a|=0x01;
-}
-
 /* Reads the 'in' file and using the csheet compresses it into 'out' file */
 void compress (FILE *in, csheet_t csheet, FILE *out, int VERBOSE) {
 	int error_count = 0;

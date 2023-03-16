@@ -9,10 +9,23 @@
 /* Writes bit '1' in defined pos,
  * where pos = < 0; 7 > */
 void write_one_in_pos(char *a, int pos) {
-	char mask = 0x40; mask <<= 1; /* 'overflow in implicit constant conversion',
-				       * I know it's stupid but I don't want to keep getting this warning */
+	unsigned char mask = 0x80;
 	mask >>= pos;
 	*a |= mask;
+}
+
+/* Prints in stderr the contents of csheet_t */
+void read_csheet(csheet_t csheet) {
+	csheet_t tmp = csheet;
+	int counting = 1;
+        fprintf(stderr,"\nCSHEET");
+        do {
+		int j = 0;
+		fprintf(stderr, "\n%d. symbol numeric: %d \t\t code: ", counting++, tmp->symbol.numeric);
+		while(tmp->code[j] != '2')
+			fprintf(stderr, "%c", tmp->code[j++]);
+	} while( (tmp = tmp->next) != NULL);
+	fprintf(stderr,"\n\n");
 }
 
 /* main function for making a csheet from heap */

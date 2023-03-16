@@ -20,7 +20,11 @@ typedef struct heap {
         struct heap *passage_1; /* heap (2.) */
 } *heap_t;
 
-void increase_amount_in_list(heap_t list, data_t c); /* increases the amount of char in list */
+int calculate_to_what_power(heap_t list, int amount_of_all_symbols); /* used for amount_to_probability */
+void amount_to_probability(int *amount, double amount_of_all_symbols, int ten_to_the_power_of); /* converts int amount into probability */
+int one_min_number(heap_t list); /* finds the smallest number in heap_t */
+void sort_list(heap_t list); /* sorts heap_t from smallest to largest */
+void increase_amount_in_list(heap_t list, data_t c); /* increases the amount of data_t in list */
 heap_t count_symbols (FILE *in, int bit, int VERBOSE); /* counts symbols in FILE */
 
 #endif

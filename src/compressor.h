@@ -8,9 +8,13 @@
 
 typedef struct dictionary {
 	data_t symbol;
+	char probability;
 	struct dictionary *next;
-} dictionary_t;
+} *dictionary_t;
 
+void free_dictionary_t(dictionary_t dictionary); /* frees dictionary */
+void read_dictionary(dictionary_t dictionary); /* prints dictionary */
+dictionary_t make_dictionary(heap_t list); /* creates a dictionary from heap_t */
 void compress (FILE *in, csheet_t csheet, FILE *out, int VERBOSE); /* reads the 'in' file and using the csheet compresses it into 'out' file */
 void decompress (FILE *in, FILE *out, int VERBOSE); /* reads the 'in' file, gets the csheet from 'in' file and decoompresses it into 'out' file */
 
