@@ -14,6 +14,19 @@ void write_one_in_pos(char *a, int pos) {
 	*a |= mask;
 }
 
+/* reads bits in byte */
+void showbits(char a, int n){
+	unsigned char mask = 0x80;
+	int i;
+	for(i=0;i<=n;i++) {
+		if(a&mask)
+			fprintf(stderr,"1");
+		else
+			fprintf(stderr,"0");
+		mask>>=1;
+	}
+}
+
 /* Prints in stderr the contents of csheet_t */
 void read_csheet(csheet_t csheet) {
 	csheet_t tmp = csheet;
@@ -22,22 +35,31 @@ void read_csheet(csheet_t csheet) {
         do {
 		int j = 0;
 		fprintf(stderr, "\n%d. symbol numeric: %d \t\t code: ", counting++, tmp->symbol.numeric);
-		while(tmp->code[j] != '2')
-			fprintf(stderr, "%c", tmp->code[j++]);
+		for(j=0;j != tmp->array_pos;j++) {
+			showbits(tmp->code[j], 7);
+		}
+		showbits(tmp->code[j], tmp->byte_pos);
 	} while( (tmp = tmp->next) != NULL);
 	fprintf(stderr,"\n\n");
 }
 
 /* main function for making a csheet from heap */
-void cmprs_list(char *code, heap_t pos, csheet_t csheet) {
-	char code_copy[MAX_CODE]; /* !fill it with 0s, but because it'll be change to read binary later it doesn't matter */
-	int depth = 0;
-	strcpy(code_copy, code);
+void cmprs_list(char *code, heap_t pos, csheet_t csheet, int depth) {
+	char code_copy[MAX_CODE];
+	int array_pos =0, byte_pos = depth, i;
+	for(i=0;i<MAX_CODE;i++)
+		code_copy[i] = code[i];
+        while(byte_pos>7) {
+                byte_pos -=8;
+                array_pos++;
+        }
 	if(pos->symbol.numeric != 0) {
 		csheet_t tmp = csheet;
 		csheet_t new_node = malloc(sizeof(*new_node));
 		new_node->next = NULL;
 		new_node->symbol = pos->symbol;
+		new_node->array_pos = array_pos;
+		new_node->byte_pos = byte_pos-1;
 		strcpy(new_node->code, code_copy);
 		while(tmp->next != NULL)
 			tmp = tmp->next;
@@ -45,17 +67,9 @@ void cmprs_list(char *code, heap_t pos, csheet_t csheet) {
 		free(pos);
 		return;
 	}
-	while(code_copy[depth]!='2')
-		depth++;
-	/* we are counting how many not 2 are in code[MAX_CODE] */
-	if(depth > MAX_CODE) {
-		fprintf(stderr, "ERROR: MAX_CODE IS TO SMALL!\n");
-		return;
-	}
-	code_copy[depth] = '0';
-	cmprs_list(code_copy, pos->passage_0, csheet);
-	code_copy[depth] = '1';
-	cmprs_list(code_copy, pos->passage_1, csheet);
+	cmprs_list(code_copy, pos->passage_0, csheet, depth+1);
+	write_one_in_pos(&code_copy[array_pos], byte_pos);
+	cmprs_list(code_copy, pos->passage_1, csheet, depth+1);
 	free(pos);
 }
 
@@ -66,7 +80,7 @@ csheet_t make_cmprs_list(heap_t heap, int VERBOSE) {
 	char code[MAX_CODE];
 	int i;
 	for(i=0;i<MAX_CODE;i++)
-		code[i]='2';
+		code[i]=0x00;
 	csheet->next = NULL;
         if(VERBOSE)
                 fprintf(stderr,"CSHEET.C: Making a compression sheet...\n");
@@ -79,7 +93,7 @@ csheet_t make_cmprs_list(heap_t heap, int VERBOSE) {
         	return csheet;
 
         }
-	cmprs_list(code, heap, csheet);
+	cmprs_list(code, heap, csheet, 0);
 	csheet = csheet->next; /* we remove the temporary node */
 	free(delete_me);
 	if(VERBOSE)
