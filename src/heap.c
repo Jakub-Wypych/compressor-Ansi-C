@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "heap.h"
 #include "counter.h" /* heap_t */
-#include "utility.h" /* add_to_list */
+#include "list_iterate.h" /* read_heap, free_heap_t */
 
 /* Searches the list for two smallest numbers.
  * If list is one node large, the second number will be returned as a -1 */
@@ -94,7 +94,7 @@ heap_t organize_heap(heap_t list, int VERBOSE) {
 		min1 = min_nmbr[0];
 		min2 = min_nmbr[1];
 		if(VERBOSE == 3)
-                        print_list(new_head->next);
+                        read_heap(new_head->next);
 	}
 	free(new_head);
 	if(VERBOSE)

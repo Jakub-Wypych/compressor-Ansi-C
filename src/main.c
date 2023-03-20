@@ -4,7 +4,7 @@
 #include "heap.h" /* organize_heap */
 #include "csheet.h" /* make_cmprs_list */
 #include "compressor.h" /* compress, decompress, make_dictionary */
-#include "utility.h" /* free_csheet_t */
+#include "list_iterate.h"
 #include <getopt.h> /* getopt */
 
 int main (int argc, char **argv) {
@@ -55,7 +55,7 @@ int main (int argc, char **argv) {
 		fprintf(stderr, "ERROR: No input/output file given. Please refer to help (-h)\n");
 		return 1;
 	}
-	c = fgetc(in); /* !change late to use mask */
+	c = fgetc(in); /* !change later to use mask */
 	if((c == 'E' || c == 'U') && (c = fgetc(in)) == 'C') {
 		if(VERBOSE)
 			fprintf(stderr,"MAIN.C: Beginning the decompression process...\n");
@@ -76,7 +76,7 @@ int main (int argc, char **argv) {
 			read_dictionary(dictionary);
 			read_csheet(csheet);
 		}
-        	compress(in, csheet, out, VERBOSE);
+        	/*compress(in, csheet, out, VERBOSE); !commented until compress func is finished */
         	fclose(in);
         	fclose(out);
 		free_csheet_t(csheet);

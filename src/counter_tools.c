@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "counter.h"
-#include "utility.h"
 #include "heap.h" /* take_from_list */
 
 /* Calculates ten_to_the_power_of for amount_to_probability */

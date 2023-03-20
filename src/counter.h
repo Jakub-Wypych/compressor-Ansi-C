@@ -24,6 +24,8 @@ int calculate_to_what_power(heap_t list, int amount_of_all_symbols); /* used for
 void amount_to_probability(int *amount, double amount_of_all_symbols, int ten_to_the_power_of); /* converts int amount into probability */
 int one_min_number(heap_t list); /* finds the smallest number in heap_t */
 void sort_list(heap_t list); /* sorts heap_t from smallest to largest */
+
+void add_to_list(heap_t list, heap_t node); /* adds node to the end of list */
 void increase_amount_in_list(heap_t list, data_t c); /* increases the amount of data_t in list */
 heap_t count_symbols (FILE *in, int bit, int VERBOSE); /* counts symbols in FILE */
 

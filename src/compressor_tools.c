@@ -5,36 +5,7 @@
 #include "counter.h" /* heap_t */
 #include <stdlib.h>
 
-
-/* Adds bit 0 or 1 on the end of byte (char) */
-void add_bit_on_end(char *a, int bit) {
-        *a<<=1;
-        if(bit)
-                *a|=0x01;
-}
-
-/* Frees the memory allocated for dictionary_t */
-void free_dictionary_t(dictionary_t dictionary) {
-        dictionary_t tmp = dictionary;
-        while(dictionary != NULL) {
-                dictionary = dictionary->next;
-                free(tmp);
-                tmp = dictionary;
-        }
-}
-
-/* Prints the contents of dictionary_t */
-void read_dictionary(dictionary_t dictionary) {
-        dictionary_t tmp = dictionary;
-        int counting = 1;
-        fprintf(stderr,"\nDICTIONARY\n");
-        while(tmp != NULL) {
-                fprintf(stderr,"%d. symbol numeric: %d \t\t probability: %d\n", counting++, tmp->symbol.numeric, tmp->probability);
-                tmp = tmp->next;
-        }
-        fprintf(stderr,"\n");
-}
-
+/* Looks for repeating probabilities in dictionary_t and marks them */
 void add_repeating_prob(dictionary_t dictionary) {
 	int repeats = -1;
 	dictionary_t tmp = dictionary, pointer;

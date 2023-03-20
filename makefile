@@ -28,4 +28,4 @@ test_16_bit: all
 	bin/compressor -i data/uncompressed -o data/compressed -v 3 -L 3
 
 test_memory_leak: all
-	valgrind bin/compressor -i data/uncompressed -o data/compressed -v 3 -L 1
+	valgrind bin/compressor -i data/uncompressed -o data/compressed -L 1

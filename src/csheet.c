@@ -3,45 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "csheet.h"
-#include "heap.h" /* heap_t */
+#include "counter.h" /* heap_t */
+#include "list_iterate.h" /* read_csheet, free_csheet_t */
+#include "bit_funcs.h" /* write_one_in_pos */
 #include <string.h> /* strcpy */
-
-/* Writes bit '1' in defined pos,
- * where pos = < 0; 7 > */
-void write_one_in_pos(char *a, int pos) {
-	unsigned char mask = 0x80;
-	mask >>= pos;
-	*a |= mask;
-}
-
-/* reads bits in byte */
-void showbits(char a, int n){
-	unsigned char mask = 0x80;
-	int i;
-	for(i=0;i<=n;i++) {
-		if(a&mask)
-			fprintf(stderr,"1");
-		else
-			fprintf(stderr,"0");
-		mask>>=1;
-	}
-}
-
-/* Prints in stderr the contents of csheet_t */
-void read_csheet(csheet_t csheet) {
-	csheet_t tmp = csheet;
-	int counting = 1;
-        fprintf(stderr,"\nCSHEET");
-        do {
-		int j = 0;
-		fprintf(stderr, "\n%d. symbol numeric: %d \t\t code: ", counting++, tmp->symbol.numeric);
-		for(j=0;j != tmp->array_pos;j++) {
-			showbits(tmp->code[j], 7);
-		}
-		showbits(tmp->code[j], tmp->byte_pos);
-	} while( (tmp = tmp->next) != NULL);
-	fprintf(stderr,"\n\n");
-}
 
 /* main function for making a csheet from heap */
 void cmprs_list(char *code, heap_t pos, csheet_t csheet, int depth) {

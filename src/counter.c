@@ -4,7 +4,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "counter.h"
-#include "utility.h"
+#include "bit_funcs.h" /* half_byte_transfer */
+#include "list_iterate.h" /* read_heap, free_heap_t */
+
+/* Adds the given node to the end of the given list */
+void add_to_list(heap_t list, heap_t node) {
+        heap_t tmp = list;
+        while( tmp->next != NULL)
+                tmp = tmp->next;
+        tmp->next=node;
+}
+
+/* Finds 8, 12, 16 bits symbol in 'in' FILE */
+/*data_t find_symbol(); !finish later */
+
 
 /* Increases the amount of data_t in list */
 void increase_amount_in_list(heap_t list, data_t c) {
@@ -84,14 +97,14 @@ heap_t count_symbols (FILE *in, int bit, int VERBOSE) {
                 return NULL;
         }
 	if(VERBOSE>1) {
-		fprintf(stderr, "COUNTER.C: Unsorted list:"); print_list(list->next); }
+		fprintf(stderr, "COUNTER.C: Unsorted list:"); read_heap(list->next); }
 	sort_list(list);
         tmp = list;
         list = list->next;
         free(tmp);
 	tmp = list;
 	if(VERBOSE>1) {
-		fprintf(stderr, "COUNTER.C: Sorted list:"); print_list(list); }
+		fprintf(stderr, "COUNTER.C: Sorted list:"); read_heap(list); }
 	/* converting amount into probability */
 	ten_to_the_power_of = calculate_to_what_power(list, amount_of_all_symbols);
 	do {
@@ -100,7 +113,7 @@ heap_t count_symbols (FILE *in, int bit, int VERBOSE) {
 	if(VERBOSE) {
 		fprintf(stderr, "COUNTER.C: Finished counting!\n");
 		if(VERBOSE == 3)
-			print_list(list);
+			read_heap(list);
 	}
         return list;
 }
