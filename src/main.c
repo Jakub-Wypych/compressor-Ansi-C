@@ -5,6 +5,7 @@
 #include "csheet.h" /* make_cmprs_list */
 #include "compressor.h" /* compress, decompress, make_dictionary */
 #include "list_iterate.h"
+#include "bit_funcs.h" /* showbits */
 #include <getopt.h> /* getopt */
 
 int main (int argc, char **argv) {
@@ -76,9 +77,19 @@ int main (int argc, char **argv) {
 			read_dictionary(dictionary);
 			read_csheet(csheet);
 		}
-        	/*compress(in, csheet, out, VERBOSE); !commented until compress func is finished */
+        	compress(dictionary, L, csheet, in, out, 0xFF, VERBOSE);
+		rewind(in);
+		while( fread(&c, 1, 1, in) != 0)
+			showbits(c, 8);
+		printf("\n");
         	fclose(in);
         	fclose(out);
+		/* remove */
+		in = fopen("data/compressed", "rb");
+		while( fread(&c, 1, 1, in) != 0)
+                        showbits(c, 8);
+		printf("\n");
+		/* remove */
 		free_csheet_t(csheet);
 		free_dictionary_t(dictionary);
 	}

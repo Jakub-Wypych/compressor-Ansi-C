@@ -29,7 +29,7 @@ void increase_amount_in_list(heap_t list, data_t c) {
                 }
         } while( (tmp = tmp->next) != NULL);
         new_node = malloc(sizeof(*new_node));
-        new_node->symbol= c;
+        new_node->symbol = c;
         new_node->amount = 1;
         new_node->next = NULL;
         new_node->passage_0 = NULL;
@@ -52,6 +52,7 @@ heap_t count_symbols (FILE *in, int bit, int VERBOSE) {
         char c, half_char = 0x00; /* for 12 bit reading */
 	rewind(in); /* just in case */
         list->next = NULL;
+	list->symbol.numeric = 0; /* !not sure if it could get incorrect symbols */
 	if(VERBOSE)
 		fprintf(stderr, "COUNTER.C: Starting to count symbols...\n");
         amount_read = fread(&c,1,1,in);

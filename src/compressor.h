@@ -13,7 +13,7 @@ typedef struct dictionary {
 } *dictionary_t;
 
 dictionary_t make_dictionary(heap_t list); /* creates a dictionary from heap_t */
-void compress (dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE *out, int VERBOSE); /* reads the 'in' file compresses it into 'out' file */
+void compress (dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE *out, unsigned char password, int VERBOSE); /* reads the 'in' file compresses it into 'out' file */
 void decompress (FILE *in, FILE *out, int VERBOSE); /* reads the 'in' file, gets the csheet from 'in' file and decoompresses it into 'out' file */
 
 #endif
