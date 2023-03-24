@@ -32,5 +32,6 @@ void write_one_in_pos(char *a, int pos); /* writes "1" in byte in 'pos' */
 void showbits(char a, int n); /* reads 'n' bit in byte */
 bit_work_t init_bitwork(FILE *file, unsigned char password); /* needed for bit reading */
 int fbit_read(data_t *data, int bit_amount, bit_work_t bitwork); /* reads <1; 16> bits */
+void fbit_write(char *transf, int bit_amount, bit_work_t bitwork); /* writes bits into FILE */
 
 #endif

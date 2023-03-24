@@ -17,60 +17,65 @@
 void compress(dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE *out, unsigned char password, int VERBOSE) {
 	dictionary_t free_dict = dictionary;
 	data_t found_symbol;
-	bit_work_t bitwork = init_bitwork(in, password);
-	int i = 0;
-	/* writing identifier for later */
-	char buf = 0x00, transfered_bits[1];
-	int buf_size = 0, error_count = 0;
+	bit_work_t bitread = init_bitwork(in, password); /* needed for fbit_read */
+	bit_work_t bitwrite = init_bitwork(out, password); /* needed for fbit_write */
+	int i = 0, prob = 0;
+	char buf = 0x00, transfered_bits[2];
+	unsigned char ident = 0x00;
         if(VERBOSE)
                 fprintf(stderr, "COMPRESSOR.C: Beginning to compress...\n");
-	fwrite(&buf, 1, 1, out);
+	/* writing identifier for later */
+	fwrite(&ident, 1, 1, out);
 	/* writing dictionary */
 	do {
+		/* converting dictionary values into char/char* */
 		transfered_bits[0] = dictionary->symbol.byte[1];
 		transfered_bits[1] = dictionary->symbol.byte[0];
-		buf_size = transfer_to_FILE(&buf, buf_size, transfered_bits, bit, out ); /* writing symbol */
-		buf_size = var_bit_transfer(&buf, buf_size, dictionary->probability, 4, out); /* writing prob */
+		buf = dictionary->probability<<4;
+		fbit_write(transfered_bits, bit, bitwrite); /* writing symbol */
+		fbit_write(&buf, 4, bitwrite); /* writing prob */
 		if(dictionary->probability > 10) { /* writing repeating prob */
-			for(i=1;i<=dictionary->probability-10;i++) {
+			prob = dictionary->probability;
+			for(i=1;i<=prob-10;i++) {
 				free_dict = dictionary;
 				dictionary = dictionary->next;
 				transfered_bits[0] = dictionary->symbol.byte[1];
 		                transfered_bits[1] = dictionary->symbol.byte[0];
-				buf_size = transfer_to_FILE(&buf, buf_size, transfered_bits, bit, out ); /* writing symbol */
+				fbit_write(transfered_bits, bit, bitwrite);
 				free(free_dict);
 			}
 		}
-		if(dictionary->next == NULL) /* we've reached the end of dict, repeating the last written symbol */
-			buf_size = transfer_to_FILE(&buf, buf_size, transfered_bits, bit, out );
 		free_dict = dictionary;
 		dictionary = dictionary->next;
 		free(free_dict);
 	} while( dictionary != NULL);
+	fbit_write(transfered_bits, bit, bitwrite);  /* we've reached the end of dict, repeating the last written symbol */
 	/* encrypting in FILE */
-	/* find symbol in in FILE, write it into found_symbol */
-	/* find that symbol in csheet */
-	buf_size = transfer_to_FILE(&buf, buf_size, csheet->code, (csheet->array_pos*8)+csheet->byte_pos+1, out ); /* writing code */
+	while( fbit_read(&found_symbol, bit, bitread) != 0) {
+		/* find 'found_symbol' in csheet and write its code */
+	}
 	/* adding stray bits */
-	if(buf != 0x00)
-		fwrite(&buf, 1, 1, out);
+	i = 8-bitwrite->buf_size; /* how many stray bits we added */
+	buf = 0x00;
+	if(bitwrite->buf_size!=0)
+		fbit_write(&buf, 8-bitwrite->buf_size, bitwrite);
 	/* setting identifier */
-	/*fseek(in, 0, SEEK_SET);
-	i = 8-buf_size;*/ /* how many stray bits we added */
-	/*buf = i;
-	buf <<= 4;*/
-	/* !finish later,
-	 * !replace 0x00 later */
-	/*if(bit == 16)
-		bit |=0x00;
+	ident = i<<5; /* how many stray bits were added */
+	ident |= 0x01; /* compressed */
+	if(bit == 16)
+		ident |=0x06; /* 11 */
 	else if(bit == 12)
-		bit |=0x00;
+		ident |=0x02; /* 01 */
 	else
-		bit |=0x00;
-	bit |= 0x01;*/
-	free(bitwork);
+		ident |=0x04; /* 10 */
+	if(password != 0xFF)
+		ident |= 0x08;
+	/*fseek(in, 0, SEEK_SET);
+	fwrite(&ident, 1, 1, out); !this doesn't work, fix later */
+	free(bitread);
+	free(bitwrite);
 	if(VERBOSE)
-                fprintf(stderr, "COMPRESSOR.C: Finished compressing! Error count while compressing: %d\n", error_count);
+                fprintf(stderr, "COMPRESSOR.C: Finished compressing!\n");
 }
 
 /* Reads the 'in' file, gets the csheet from 'in' file and decoompresses it into 'out' file */

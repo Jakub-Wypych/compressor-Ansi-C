@@ -78,20 +78,22 @@ int main (int argc, char **argv) {
 			read_csheet(csheet);
 		}
         	compress(dictionary, L, csheet, in, out, 0xFF, VERBOSE);
+		/* remove */
 		rewind(in);
 		while( fread(&c, 1, 1, in) != 0)
 			showbits(c, 8);
 		printf("\n");
-        	fclose(in);
+		/* remove */
+		fclose(in);
         	fclose(out);
 		/* remove */
 		in = fopen("data/compressed", "rb");
 		while( fread(&c, 1, 1, in) != 0)
                         showbits(c, 8);
 		printf("\n");
+		fclose(in);
 		/* remove */
 		free_csheet_t(csheet);
-		free_dictionary_t(dictionary);
 	}
 	return 0;
 }

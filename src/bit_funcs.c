@@ -88,6 +88,7 @@ bit_work_t init_bitwork(FILE *file, unsigned char password) {
 int fbit_read(data_t *data, int bit_amount, bit_work_t bitwork) {
 	int amount_read = bit_amount;
 	char read_byte;
+	/* Creating masks for data->byte */
 	unsigned char mask = 0xFF;
 	int shift[2] = { 0, 0 };
 	if(bit_amount>=8) {
@@ -97,7 +98,7 @@ int fbit_read(data_t *data, int bit_amount, bit_work_t bitwork) {
 		shift[0] = bit_amount;
 	data->numeric = 0;
 	while(bitwork->buf_size<bit_amount) {
-		if(fread(&read_byte, 1, 1, bitwork->file) == 0) {
+		if(fread(&read_byte, 1, 1, bitwork->file) == 0) { /* we couldn't read the asked amount of bits */
 			amount_read = bitwork->buf_size;
 			break;
 		}
@@ -108,8 +109,38 @@ int fbit_read(data_t *data, int bit_amount, bit_work_t bitwork) {
 	bitwork->buf.all <<= (32-bitwork->buf_size);
 	data->byte[1] = (bitwork->buf.byte.one&(mask<<(8-shift[0])));
 	data->byte[0] = (bitwork->buf.byte.two&(mask<<(8-shift[1])));
-	bitwork->buf.all <<= bit_amount;
+	/*bitwork->buf.all <<= bit_amount;*/ /*!this is probably not needed, they'll be overriden eitherway */
 	bitwork->buf_size -= bit_amount;
 	bitwork->buf.all >>= (32-bitwork->buf_size);
 	return amount_read;
+}
+
+/* Writes 'bit_amount' of bits from '*transf' into bitwork->file,
+ * *transf: stores the bits to be written into file,
+ * bit_amount: how many bits to transfer from *transf,
+ * bitwork: stores the leftover bits as well as the FILE. */
+void fbit_write(char *transf, int bit_amount, bit_work_t bitwork) {
+	int i = 0;
+	while(bit_amount/8>=1) {
+		/* writing 8 bits into file */
+		bitwork->buf.all<<=8;
+		bitwork->buf.byte.four = transf[i++];
+		bitwork->buf.all<<=(32-(8+bitwork->buf_size));
+		fwrite(&bitwork->buf.byte.one, 1, 1, bitwork->file);
+		bitwork->buf.all>>=(32-(8+bitwork->buf_size));
+		bit_amount -= 8;
+	}
+	if(bit_amount==0) /* we've wrote all that was needed (bit_amount is dividable by 8 */
+		return;
+	/* we add leftoverbits to bitwork */
+	bitwork->buf.all<<=8;
+	bitwork->buf.byte.four = transf[i];
+	bitwork->buf.all>>=(8-bit_amount);
+	bitwork->buf_size += bit_amount;
+	if(bitwork->buf_size<8) /* we can't write the leftover bits */
+		return;
+	bitwork->buf.all<<=(32-bitwork->buf_size);
+        fwrite(&bitwork->buf.byte.one, 1, 1, bitwork->file);
+        bitwork->buf.all>>=(32-bitwork->buf_size);
+	bitwork->buf_size -= 8;
 }

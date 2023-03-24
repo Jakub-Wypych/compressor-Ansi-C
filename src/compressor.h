@@ -8,7 +8,7 @@
 
 typedef struct dictionary {
 	data_t symbol;
-	char probability;
+	unsigned char probability;
 	struct dictionary *next;
 } *dictionary_t;
 
