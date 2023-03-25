@@ -37,7 +37,7 @@ void read_csheet(csheet_t csheet) {
 		int j = 0;
 		fprintf(stderr, "\n%d. symbol numeric: %d \t\t code: ", counting++, tmp->symbol.numeric);
 		for(j=0;j != tmp->array_pos;j++) {
-			showbits(tmp->code[j], 7);
+			showbits(tmp->code[j], 8);
 		}
 		showbits(tmp->code[j], tmp->byte_pos);
 	} while( (tmp = tmp->next) != NULL);

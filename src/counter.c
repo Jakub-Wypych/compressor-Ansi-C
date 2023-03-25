@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "counter.h"
-#include "bit_funcs.h" /* half_byte_transfer */
+#include "bit_funcs.h" /* fbit_read, bit_work_t */
 #include "list_iterate.h" /* read_heap, free_heap_t */
 
 /* Adds the given node to the end of the given list */
@@ -14,10 +14,6 @@ void add_to_list(heap_t list, heap_t node) {
                 tmp = tmp->next;
         tmp->next=node;
 }
-
-/* Finds 8, 12, 16 bits symbol in 'in' FILE */
-/*data_t find_symbol(); !finish later */
-
 
 /* Increases the amount of data_t in list */
 void increase_amount_in_list(heap_t list, data_t c) {
@@ -48,55 +44,26 @@ heap_t count_symbols (FILE *in, int bit, int VERBOSE) {
         /* depending on bit create symbol using data_t */
         heap_t tmp, list = malloc(sizeof(*list)); /* tmp: first node in list is temporary, we'll need to free it later */
         data_t found_symbol;
-	size_t amount_read;
-        char c, half_char = 0x00; /* for 12 bit reading */
-	rewind(in); /* just in case */
+	bit_work_t bitread = init_bitwork(in, 0xFF); /*! add password later */
         list->next = NULL;
-	list->symbol.numeric = 0; /* !not sure if it could get incorrect symbols */
+	list->symbol.numeric = 0; /* !this is bad fix later, get symbol and make it the first node */
 	if(VERBOSE)
 		fprintf(stderr, "COUNTER.C: Starting to count symbols...\n");
-        amount_read = fread(&c,1,1,in);
-	while(amount_read != 0) {
-                /* getting symbol from in FILE */
+	/* checking if file can be read per 12 or 16 bits */
+	fseek(in, 0, SEEK_END);
+	if((bit == 12 && ftell(in)%3 != 0) || (bit == 16 && ftell(in)%2 != 0)) {
+		fprintf(stderr, "ERROR: Cannot read per %d bit!\n", bit);
+		free(list);
+		free(bitread);
+		return NULL;
+	}
+	/* finding symbols in FILE */
+	rewind(in);
+	while(fbit_read(&found_symbol, bit, bitread) == bit) {
 		amount_of_all_symbols++;
-                found_symbol.byte[1] = c;
-                if(bit==16) {
-                        amount_read = fread(&c,1,1,in);
-                        if(amount_read == 0) {
-                                fprintf(stderr,"ERROR: Given file can't be read per 2 bytes; missing 1 byte\n");
-                                free_heap_t(list);
-                                return NULL;
-                        }
-			amount_of_all_symbols++;
-                        found_symbol.byte[0] = c;
-                } else if(bit==12) { /* when reading per 12 bits we encounter the problem of "half byte", so we need to act accordingly */
-                        if(half_char != 0x00) {
-                                half_byte_transfer(&c, &half_char);
-                                found_symbol.byte[1] = half_char;
-                                found_symbol.byte[0] = c;
-                                half_char = 0x00;
-                        } else {
-                                amount_read = fread(&c,1,1,in);
-				if(amount_read == 0) {
-                                	fprintf(stderr,"ERROR: Given file can't be read per 12 bits; missing 2 bytes\n");
-                                	free_heap_t(list);
-                                	return NULL;
-                        	}
-				amount_of_all_symbols++;
-                                found_symbol.byte[0] = (c&0xF0);
-                                half_char = (c<<4);
-                        }
-                } else /* read per 8 bits */
-                        found_symbol.byte[0] = 0x00;
-                /* adding the found_symbol into the list */
-                increase_amount_in_list(list, found_symbol);
-		amount_read = fread(&c,1,1,in);
-        }
-        if(half_char!=0x00) {
-                fprintf(stderr,"ERROR: Given file can't be read per 12 bits; missing 1 byte\n");
-                free_heap_t(list);
-                return NULL;
-        }
+		increase_amount_in_list(list, found_symbol);
+	}
+	free(bitread);
 	if(VERBOSE>1) {
 		fprintf(stderr, "COUNTER.C: Unsorted list:"); read_heap(list->next); }
 	sort_list(list);

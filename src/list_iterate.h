@@ -1,8 +1,8 @@
 /* Used for printing and clearing lists */
+
 #ifndef _LIST_ITERATE_H_IS_INCLUDED_
 #define _LIST_ITERATE_H_IS_INCLUDED_
 
-#include <stdio.h>
 #include "counter.h" /* heap_t */
 #include "csheet.h" /* csheet_t */
 #include "compressor.h" /* dictionary_t */

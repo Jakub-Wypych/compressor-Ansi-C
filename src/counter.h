@@ -4,14 +4,14 @@
 #ifndef _COUNTER_H_IS_INCLUDED_
 #define _COUNTER_H_IS_INCLUDED_
 
-/* This structure has a dual purpose:
- * 1. It can be used as a list which stores a symbol (char) and its amount (int)
- * 2. Can be used/converted to create a heap */
 typedef union {
         unsigned short int numeric; /* symbol stored in numeric form */
         unsigned char byte[2]; /* [1] is first byte, [0] is last byte */
 } data_t;
 
+/* This structure has a dual purpose:
+ * 1. It can be used as a list which stores a symbol (char) and its amount (int)
+ * 2. Can be used/converted to create a heap */
 typedef struct heap {
         data_t symbol;
         int amount; /* e.g. 27 */

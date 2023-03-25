@@ -12,9 +12,9 @@
 void cmprs_list(char *code, heap_t pos, csheet_t csheet, int depth) {
 	char code_copy[MAX_CODE];
 	int array_pos =0, byte_pos = depth, i;
-	for(i=0;i<MAX_CODE;i++)
+	for(i=0;i<MAX_CODE;i++) /* copying the pointer */
 		code_copy[i] = code[i];
-        while(byte_pos>7) {
+        while(byte_pos>7) { /* calculating which pos to write bit '1' in byte */
                 byte_pos -=8;
                 array_pos++;
         }
@@ -24,7 +24,7 @@ void cmprs_list(char *code, heap_t pos, csheet_t csheet, int depth) {
 		new_node->next = NULL;
 		new_node->symbol = pos->symbol;
 		new_node->array_pos = array_pos;
-		new_node->byte_pos = byte_pos-1;
+		new_node->byte_pos = byte_pos;
 		strcpy(new_node->code, code_copy);
 		while(tmp->next != NULL)
 			tmp = tmp->next;

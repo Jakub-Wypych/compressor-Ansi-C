@@ -1,10 +1,11 @@
-/* Used for compressing/decompressing files. */
+/* Used for compressing files. */
 
 #include <stdio.h>
 #include "compressor.h"
+#include "dictionary.h" /* dictionary_t */
 #include "counter.h" /* data_t */
 #include "csheet.h" /* csheet_t */
-#include "bit_funcs.h" /* var_bit_transfer, transfer_to_FILE */
+#include "bit_funcs.h" /* bit_work_t, fbit_read, fbit_write */
 #include <stdlib.h>
 
 /* Used for compressing 'in' FILE into 'out' FILE,
@@ -13,10 +14,12 @@
  * csheet: compression sheet used for encrypting the in FILE,
  * in: uncompressed file,
  * out: compressed file,
+ * password: password (duh.),
  * VERBOSE: DEBUG */
 void compress(dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE *out, unsigned char password, int VERBOSE) {
 	dictionary_t free_dict = dictionary;
 	data_t found_symbol;
+	csheet_t csheet_tmp = csheet;
 	bit_work_t bitread = init_bitwork(in, password); /* needed for fbit_read */
 	bit_work_t bitwrite = init_bitwork(out, password); /* needed for fbit_write */
 	int i = 0, prob = 0;
@@ -41,7 +44,7 @@ void compress(dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE 
 				dictionary = dictionary->next;
 				transfered_bits[0] = dictionary->symbol.byte[1];
 		                transfered_bits[1] = dictionary->symbol.byte[0];
-				fbit_write(transfered_bits, bit, bitwrite);
+				fbit_write(transfered_bits, bit, bitwrite); /* writing symbol */
 				free(free_dict);
 			}
 		}
@@ -52,7 +55,12 @@ void compress(dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE 
 	fbit_write(transfered_bits, bit, bitwrite);  /* we've reached the end of dict, repeating the last written symbol */
 	/* encrypting in FILE */
 	while( fbit_read(&found_symbol, bit, bitread) != 0) {
-		/* find 'found_symbol' in csheet and write its code */
+		do {
+			if(found_symbol.numeric == csheet_tmp->symbol.numeric)
+				break;
+		} while( (csheet_tmp = csheet_tmp->next) != NULL );
+		fbit_write(csheet_tmp->code, (csheet_tmp->array_pos*8)+csheet_tmp->byte_pos, bitwrite);
+		csheet_tmp = csheet;
 	}
 	/* adding stray bits */
 	i = 8-bitwrite->buf_size; /* how many stray bits we added */
@@ -70,20 +78,10 @@ void compress(dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE 
 		ident |=0x04; /* 10 */
 	if(password != 0xFF)
 		ident |= 0x08;
-	/*fseek(in, 0, SEEK_SET);
-	fwrite(&ident, 1, 1, out); !this doesn't work, fix later */
+	rewind(out);
+	fwrite(&ident, 1, 1, out);
 	free(bitread);
 	free(bitwrite);
 	if(VERBOSE)
                 fprintf(stderr, "COMPRESSOR.C: Finished compressing!\n");
-}
-
-/* Reads the 'in' file, gets the csheet from 'in' file and decoompresses it into 'out' file */
-void decompress (FILE *in, FILE *out, int VERBOSE) {
-	/*csheet_t csheet;*/
-	int error_count = 0;
-	if(VERBOSE)
-                fprintf(stderr, "COMPRESSOR.C: Beginning to decompress...\n");
-	if(VERBOSE)
-		fprintf(stderr, "COMPRESSOR.C: Finished decompressing! Error count while decompressing: %d\n", error_count);
 }
