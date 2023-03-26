@@ -9,8 +9,14 @@ gen_uncompressed_file:
 compress_no_opt: all
 	bin/compressor -i data/uncompressed -o data/compressed
 
+decompress_no_opt: all
+	bin/compressor -i data/compressed -o data/decompressed -x
+
 verbose: all
 	bin/compressor -i data/uncompressed -o data/compressed -v 3 -L 1
+
+decompress: all
+	bin/compressor -i data/compressed -o data/decompressed -x -v 3 -L 1
 
 help: all
 	bin/compressor -h
@@ -29,3 +35,4 @@ test_16_bit: all
 
 test_memory_leak: all
 	valgrind bin/compressor -i data/uncompressed -o data/compressed -L 1
+	valgrind bin/compressor -i data/compressed -o data/decompressed -L 1 -x

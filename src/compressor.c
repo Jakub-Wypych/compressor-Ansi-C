@@ -74,7 +74,7 @@ void compress(dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE 
 		ident |=0x06; /* 11 */
 	else if(bit == 12)
 		ident |=0x02; /* 01 */
-	else
+	else /* 8 */
 		ident |=0x04; /* 10 */
 	if(password != 0xFF)
 		ident |= 0x08;

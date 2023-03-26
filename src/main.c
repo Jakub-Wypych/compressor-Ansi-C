@@ -13,14 +13,13 @@
 #include <getopt.h> /* getopt */
 
 int main (int argc, char **argv) {
-	char c;
-	int opt, VERBOSE = 0, L = 8;
-	FILE *in = NULL;
-	FILE *out = NULL;
+	unsigned char password = 0xFF;
+	int opt, VERBOSE = 0, L = 8, decomp = 0;
+	FILE *in = NULL, *out = NULL;
 	heap_t heap;
 	dictionary_t dictionary;
 	csheet_t csheet;
-	while ((opt = getopt(argc, argv, "hL:v:i:o:")) != -1) {
+	while ((opt = getopt(argc, argv, "hxp:L:v:i:o:")) != -1) {
 		switch (opt) {
 			case 'h':  /* help */
 				printf("\ncompress -i [infile] -o [outfile] [-h|-v|-p|-L]\n"
@@ -31,6 +30,12 @@ int main (int argc, char **argv) {
 						"\t-p [argument]:\tadd password.\n"
 						"\t-L [value]:\t1: reads per byte, 2: reads per 12 bits, 3: reads per 2 bytes\n");
 				return 0;
+			case 'x':
+				decomp = 1;
+				break;
+			case 'p':
+				/* !finish password */
+				break;
 			case 'v':
 				VERBOSE = atoi(optarg) == 3 ? 3 : atoi(optarg) == 2 ? 2 : 1;
 				/* 2 additionally prints csheet and 3 also prints LIST with added blank nodes */
@@ -61,15 +66,11 @@ int main (int argc, char **argv) {
 		fprintf(stderr, "ERROR: No input/output file given. Please refer to help (-h)\n");
 		return 1;
 	}
-	c = fgetc(in); /* !change later to use mask and -x opt */
-	if((c == 'E' || c == 'U') && (c = fgetc(in)) == 'C') {
+	if(decomp) {
 		if(VERBOSE)
 			fprintf(stderr,"MAIN.C: Beginning the decompression process...\n");
-	        decompress(in, out, VERBOSE);
-	        fclose(in);
-		fclose(out);
-	}
-	else {
+	        decompress(in, password, out, VERBOSE);
+	} else {
 		if(VERBOSE)
 			fprintf(stderr, "MAIN.C: Beginning the compression process...\n");
 		heap = count_symbols(in, L, VERBOSE);
@@ -85,23 +86,10 @@ int main (int argc, char **argv) {
 			read_dictionary(dictionary);
 			read_csheet(csheet);
 		}
-        	compress(dictionary, L, csheet, in, out, 0xFF, VERBOSE);
-		/* !remove */
-		rewind(in);
-		while( fread(&c, 1, 1, in) != 0)
-			showbits(c, 8);
-		printf("\n");
-		/* remove! */
-		fclose(in);
-        	fclose(out);
-		/* !remove */
-		in = fopen("data/compressed", "rb");
-		while( fread(&c, 1, 1, in) != 0)
-                        showbits(c, 8);
-		printf("\n");
-		fclose(in);
-		/* remove! */
+        	compress(dictionary, L, csheet, in, out, password, VERBOSE);
 		free_csheet_t(csheet);
 	}
+	fclose(in);
+	fclose(out);
 	return 0;
 }
