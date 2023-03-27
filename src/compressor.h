@@ -6,6 +6,6 @@
 #include "csheet.h" /* csheet_t */
 #include "dictionary.h" /* dictionary_t */
 
-void compress (dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE *out, unsigned char password, int VERBOSE); /* reads the 'in' file compresses it into 'out' file */
+void compress (dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE *out, char password, int VERBOSE); /* reads the 'in' file compresses it into 'out' file */
 
 #endif

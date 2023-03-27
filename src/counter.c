@@ -44,7 +44,7 @@ heap_t count_symbols (FILE *in, int bit, int VERBOSE) {
         /* depending on bit create symbol using data_t */
         heap_t tmp, list = malloc(sizeof(*list)); /* tmp: first node in list is temporary, we'll need to free it later */
         data_t found_symbol;
-	bit_work_t bitread = init_bitwork(in, 0xFF);
+	bit_work_t bitread = init_bitwork(in, 0x00);
         list->next = NULL;
 	list->symbol.numeric = 0; /* !this is bad fix later, get symbol and make it the first node */
 	if(VERBOSE)

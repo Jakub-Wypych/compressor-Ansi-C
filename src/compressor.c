@@ -16,11 +16,11 @@
  * out: compressed file,
  * password: password (duh.),
  * VERBOSE: DEBUG */
-void compress(dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE *out, unsigned char password, int VERBOSE) {
+void compress(dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE *out, char password, int VERBOSE) {
 	dictionary_t free_dict = dictionary;
 	data_t found_symbol;
 	csheet_t csheet_tmp = csheet;
-	bit_work_t bitread = init_bitwork(in, password); /* needed for fbit_read */
+	bit_work_t bitread = init_bitwork(in, 0x00); /* needed for fbit_read */
 	bit_work_t bitwrite = init_bitwork(out, password); /* needed for fbit_write */
 	int i = 0, prob = 0;
 	char buf = 0x00, transfered_bits[2];
@@ -28,7 +28,7 @@ void compress(dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE 
         if(VERBOSE)
                 fprintf(stderr, "COMPRESSOR.C: Beginning to compress...\n");
 	/* writing identifier for later */
-	fwrite(&ident, 1, 1, out);
+	fbit_write(&buf, 8, bitwrite);
 	/* writing dictionary */
 	do {
 		/* converting dictionary values into char/char* */
@@ -76,9 +76,10 @@ void compress(dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE 
 		ident |=0x02; /* 01 */
 	else /* 8 */
 		ident |=0x04; /* 10 */
-	if(password != 0xFF)
+	if(password != 0x00)
 		ident |= 0x08;
 	rewind(out);
+	ident^=bitwrite->password;
 	fwrite(&ident, 1, 1, out);
 	free(bitread);
 	free(bitwrite);

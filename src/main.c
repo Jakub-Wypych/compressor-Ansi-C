@@ -16,8 +16,8 @@
 #define PATH_MAX 255
 
 int main (int argc, char **argv) {
-	char path[PATH_MAX];
-	unsigned char password = 0xFF;
+	char path[PATH_MAX], password = 0x00;
+	int i;
 	int opt, VERBOSE = 0, L = 8, decomp = 0;
 	FILE *in = NULL, *out = NULL;
 	heap_t heap;
@@ -38,7 +38,12 @@ int main (int argc, char **argv) {
 				decomp = 1;
 				break;
 			case 'p':
-				/* !finish password */
+				i = 1;
+				password = optarg[0];
+				for( ; optarg[i] != '\0'; i++)
+					password^=optarg[i];
+				if(password == 0x00) /* just in case */
+					password = 0x01;
 				break;
 			case 'v':
 				VERBOSE = atoi(optarg) == 3 ? 3 : atoi(optarg) == 2 ? 2 : 1;

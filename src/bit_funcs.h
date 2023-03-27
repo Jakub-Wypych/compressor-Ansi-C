@@ -22,12 +22,12 @@ typedef struct {
 	buf_t buf; /* buffer */
 	char buf_size; /* how many left overbits are in buf */
 	FILE *file; /* FILE which the struct will be working with */
-	unsigned char password; /* password which bitwork will be using */
+	char password; /* password which bitwork will be using */
 } *bit_work_t;
 
 void write_one_in_pos(char *a, int pos); /* writes "1" in byte in 'pos' */
 void showbits(char a, int n); /* prints <1;8> bit in byte */
-bit_work_t init_bitwork(FILE *file, unsigned char password); /* needed for bit reading */
+bit_work_t init_bitwork(FILE *file, char password); /* needed for bit reading */
 int fbit_read(data_t *data, int bit_amount, bit_work_t bitwork); /* reads <1; 16> bits */
 void fbit_write(char *transf, int bit_amount, bit_work_t bitwork); /* writes bits into FILE */
 

@@ -36,7 +36,7 @@ heap_t copy_heap(heap_t heap) {
  * password: password,,
  * out: decompressed file,
  * VERBOSE: DEBUG. */
-heap_t decompress (FILE *in, unsigned char password, FILE *out, int VERBOSE) {
+heap_t decompress (FILE *in, char password, FILE *out, int VERBOSE) {
         FILE *out_tmp = fopen("tmp/decompressed_tmp", "wb"); /* we first write into a tmp FILE, later on we'll copy its contents to the out FILE */
 	unsigned char ident = 0x00; /* identifier */
 	unsigned char stray_bits = 0; /* for reomoving added bits on the end of FILE */
@@ -47,7 +47,7 @@ heap_t decompress (FILE *in, unsigned char password, FILE *out, int VERBOSE) {
 	int i, stray_bytes = 0; /* how many byte we have to remove from the end of file */
 	double outfile_size = 0;
 	bit_work_t bitread = init_bitwork(in, password); /* needed for fbit_read */
-	bit_work_t bitwrite = init_bitwork(out_tmp, 0xFF); /* needed for fbit_write */
+	bit_work_t bitwrite = init_bitwork(out_tmp, 0x00); /* needed for fbit_write */
 	data_t found_symbol, found_prob, previous_symbol;
 	heap_t heap = malloc(sizeof(*heap)), heap_copy;
 	csheet_t csheet, csheet_tmp;
@@ -65,7 +65,8 @@ heap_t decompress (FILE *in, unsigned char password, FILE *out, int VERBOSE) {
 		bit = 16;
 	else if( (ident&0x06) == 2 )
 		bit = 12;
-	/* !check if password protected and act accordingly */
+	if((ident&0x08) && password == 0x00 ) /* is password protected and we don't have a password */
+		fprintf(stderr, "ERROR: File is password protected!\n");
 	/* adding first node to heap */
 	fbit_read(&found_symbol, bit, bitread); /* reading symbol */
 	fbit_read(&found_prob, 4, bitread); /* reading probability */
@@ -83,7 +84,7 @@ heap_t decompress (FILE *in, unsigned char password, FILE *out, int VERBOSE) {
 		if(fbit_read(&found_prob, 4, bitread) != 4) /* reading prob */ {
 			/* we've reached the end of the file,
 			 * it either means the file is damaged or we have the wrong password */
-			if(password != 0xFF) /* wrong password */
+			if(password != 0x00) /* wrong password */
 				fprintf(stderr, "ERROR: The given password is incorrect!\n");
 			else
 				fprintf(stderr, "ERROR: The compressed file is either damaged or not a compressed file!\n");

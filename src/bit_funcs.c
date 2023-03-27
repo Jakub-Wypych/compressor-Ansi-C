@@ -26,7 +26,7 @@ void showbits(char a, int n) {
 }
 
 /* Creates bitwork */
-bit_work_t init_bitwork(FILE *file, unsigned char password) {
+bit_work_t init_bitwork(FILE *file, char password) {
 	bit_work_t bitwork = malloc(sizeof(*bitwork));
 	bitwork->buf.all = 0;
 	bitwork->buf_size = 0;
@@ -57,6 +57,7 @@ int fbit_read(data_t *data, int bit_amount, bit_work_t bitwork) {
 			amount_read = bitwork->buf_size;
 			break;
 		}
+		read_byte^=bitwork->password; /* decrypting with password */
 		bitwork->buf.all<<=8;
 		bitwork->buf.byte.four = read_byte;
 		bitwork->buf_size += 8;
@@ -80,6 +81,7 @@ void fbit_write(char *transf, int bit_amount, bit_work_t bitwork) {
 		bitwork->buf.all<<=8;
 		bitwork->buf.byte.four = transf[i++];
 		bitwork->buf.all<<=(32-(8+bitwork->buf_size));
+		bitwork->buf.byte.one^=bitwork->password; /* encrypting */
 		fwrite(&bitwork->buf.byte.one, 1, 1, bitwork->file);
 		bitwork->buf.all>>=(32-(8+bitwork->buf_size));
 		bit_amount -= 8;
@@ -94,6 +96,7 @@ void fbit_write(char *transf, int bit_amount, bit_work_t bitwork) {
 	if(bitwork->buf_size<8) /* we can't write the leftover bits */
 		return;
 	bitwork->buf.all<<=(32-bitwork->buf_size);
+	bitwork->buf.byte.one^=bitwork->password; /* encrypting */
         fwrite(&bitwork->buf.byte.one, 1, 1, bitwork->file);
         bitwork->buf.all>>=(32-bitwork->buf_size);
 	bitwork->buf_size -= 8;
