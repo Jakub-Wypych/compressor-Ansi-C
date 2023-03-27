@@ -20,13 +20,24 @@ void add_new_node_to_heap(heap_t heap, data_t symbol, int amount) {
 	add_to_list(heap, new_node);
 }
 
+/* Makes a copy of heap_t */
+heap_t copy_heap(heap_t heap) {
+	heap_t heap_copy = malloc(sizeof(*heap_copy)), heap_tmp = heap;
+	heap_copy->next = NULL;
+	while(heap_tmp != NULL) {
+		add_new_node_to_heap(heap_copy, heap_tmp->symbol, heap_tmp->amount);
+		heap_tmp = heap_tmp->next;
+	}
+	return heap_copy;
+}
+
 /* Reads the 'in' file and decoompresses it into 'out' file,
  * in: compressed file,
  * password: password,,
  * out: decompressed file,
  * VERBOSE: DEBUG. */
-void decompress (FILE *in, unsigned char password, FILE *out, int VERBOSE) {
-        FILE *out_tmp = fopen("decompressed_tmp", "wb"); /* we first write into a tmp FILE, later on we'll copy its contents to the out FILE */
+heap_t decompress (FILE *in, unsigned char password, FILE *out, int VERBOSE) {
+        FILE *out_tmp = fopen("tmp/decompressed_tmp", "wb"); /* we first write into a tmp FILE, later on we'll copy its contents to the out FILE */
 	unsigned char ident = 0x00; /* identifier */
 	unsigned char stray_bits = 0; /* for reomoving added bits on the end of FILE */
 	char code[MAX_CODE]; /* for decrypting the infile */
@@ -38,16 +49,16 @@ void decompress (FILE *in, unsigned char password, FILE *out, int VERBOSE) {
 	bit_work_t bitread = init_bitwork(in, password); /* needed for fbit_read */
 	bit_work_t bitwrite = init_bitwork(out_tmp, 0xFF); /* needed for fbit_write */
 	data_t found_symbol, found_prob, previous_symbol;
-	heap_t heap = malloc(sizeof(*heap));
+	heap_t heap = malloc(sizeof(*heap)), heap_copy;
 	csheet_t csheet, csheet_tmp;
 	if(VERBOSE)
-                fprintf(stderr, "COMPRESSOR.C: Beginning to decompress...\n");
+                fprintf(stderr, "DECOMPRESSOR.C: Beginning to decompress...\n");
 	/* reading identifier */
 	fbit_read(&found_symbol, 8, bitread);
 	ident = found_symbol.byte[1];
 	if(ident<<7 == 0) { /* checking if file is compressed */
                 fprintf(stderr, "ERROR: The infile is not copmressed!\n");
-                return;
+                return NULL;
         }
 	stray_bits = ident>>5;
 	if( (ident&0x06) == 6 )
@@ -69,7 +80,20 @@ void decompress (FILE *in, unsigned char password, FILE *out, int VERBOSE) {
 	fbit_read(&found_symbol, bit, bitread); /* reading symbol (needed for while loop) */
 	/* reading rest of the heap */
 	while( previous_symbol.numeric != found_symbol.numeric) {
-		fbit_read(&found_prob, 4, bitread); /* reading prob */
+		if(fbit_read(&found_prob, 4, bitread) != 4) /* reading prob */ {
+			/* we've reached the end of the file,
+			 * it either means the file is damaged or we have the wrong password */
+			if(password != 0xFF) /* wrong password */
+				fprintf(stderr, "ERROR: The given password is incorrect!\n");
+			else
+				fprintf(stderr, "ERROR: The compressed file is either damaged or not a compressed file!\n");
+			free_heap_t(heap);
+			free(bitread);
+			free(bitwrite);
+			fclose(out_tmp);
+			remove("tmp/decompressed_tmp");
+			return NULL;
+		}
 		prob = (found_prob.byte[1]>>4);
 		if(prob > 9) { /* checking for repeating prob */
 			add_new_node_to_heap(heap, found_symbol, previous_prob);
@@ -87,6 +111,7 @@ void decompress (FILE *in, unsigned char password, FILE *out, int VERBOSE) {
 	if(VERBOSE>1)
 		read_heap(heap);
 	/* creating codes for symbols */
+	heap_copy = copy_heap(heap); /* copying heap for later */
 	heap = organize_heap(heap, VERBOSE);
         csheet = make_cmprs_list(heap, VERBOSE);
 	if(VERBOSE>1)
@@ -137,7 +162,7 @@ void decompress (FILE *in, unsigned char password, FILE *out, int VERBOSE) {
 	/* copying contents of out_tmp into out, without the additional bytes */
 	outfile_size = ftell(out_tmp) - (stray_bytes/8);
 	fclose(out_tmp);
-	out_tmp = fopen("decompressed_tmp", "rb");
+	out_tmp = fopen("tmp/decompressed_tmp", "rb");
 	while(outfile_size != 0) {
 		unsigned char buf;
 		fread(&buf, 1, 1, out_tmp);
@@ -148,7 +173,9 @@ void decompress (FILE *in, unsigned char password, FILE *out, int VERBOSE) {
 	free(bitread);
 	free(bitwrite);
 	free_csheet_t(csheet);
-	remove("decompressed_tmp");
+	remove("tmp/decompressed_tmp");
         if(VERBOSE)
-                fprintf(stderr, "COMPRESSOR.C: Finished decompressing!\n");
+                fprintf(stderr, "DECOMPRESSOR.C: Finished decompressing!\n");
+	heap_copy->amount = bit; /* in first node we save the 8, 12, 16 bit reading */
+	return heap_copy;
 }

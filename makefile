@@ -6,14 +6,16 @@ gen_uncompressed_file:
 	data/gen data/uncompressed
 	rm data/gen
 
+file_compare:
+	cc -Wall -ansi -pedantic test/cmp_files.c -o test/compare
+	test/compare data/uncompressed data/decompressed
+	rm test/compare
+
 compress_no_opt: all
 	bin/compressor -i data/uncompressed -o data/compressed
 
 decompress_no_opt: all
 	bin/compressor -i data/compressed -o data/decompressed -x
-
-verbose: all
-	bin/compressor -i data/uncompressed -o data/compressed -v 3 -L 1
 
 decompress: all
 	bin/compressor -i data/compressed -o data/decompressed -x -v 3 -L 1
@@ -21,11 +23,8 @@ decompress: all
 help: all
 	bin/compressor -h
 
-test_compress_no_symbol: all
-	bin/compressor -i data/no_symbols -o data/decompressed -v 3
-
-test_compress_one_symbol: all
-	bin/compressor -i data/only_one_symbol -o data/decompressed -v 3
+test_8_bit: all
+	bin/compressor -i data/uncompressed -o data/compressed -v 3 -L 1
 
 test_12_bit: all
 	bin/compressor -i data/uncompressed -o data/compressed -v 3 -L 2
@@ -33,6 +32,8 @@ test_12_bit: all
 test_16_bit: all
 	bin/compressor -i data/uncompressed -o data/compressed -v 3 -L 3
 
-test_memory_leak: all
+test_memory_leak_compress: all
 	valgrind bin/compressor -i data/uncompressed -o data/compressed -L 1
+
+test_memory_leak_decompress: all
 	valgrind bin/compressor -i data/compressed -o data/decompressed -L 1 -x
