@@ -57,3 +57,25 @@ lorem_ipsum: all
 	test/compare data/lorem_ipsum data/compressed
 	rm test/compare
 
+test_error_201: all
+	valgrind bin/compressor -i no_file -o data/compressed -v 1
+
+test_error_203: all
+	valgrind bin/compressor -o data/compressed -v 1
+
+test_error_204: all
+	valgrind bin/compressor -i data/uncompressed -v 1
+
+test_error_205: all
+	valgrind bin/compressor -q
+
+test_error_206: all
+	valgrind bin/compressor -i test/unreadable_per_12 -o data/compressed -v 1 -L 2
+
+test_error_207: all
+	bin/compressor -i data/uncompressed -o data/compressed -p xxx
+	valgrind bin/compressor -i data/compressed -o data/decompressed -v 1 -x
+
+test_error_208: all
+	bin/compressor -i data/uncompressed -o data/compressed -p xxx
+	valgrind bin/compressor -i data/compressed -o data/decompressed -p yyy -x -v 1

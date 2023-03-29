@@ -52,15 +52,15 @@ int main (int argc, char **argv) {
 			case 'i': /* (i)nput file */
 				in = fopen(optarg, "rb");
 				if(in==NULL) {
-					fprintf(stderr,"ERROR: Failure to read %s\n", optarg);
-					return 1;
+					fprintf(stderr,"ERROR: Failure to open %s\n", optarg);
+					return 201;
 				}
 				break;
 			case 'o': /* (o)utput file */
 				out = fopen(optarg, "wb");
 				if(out==NULL) {
-					fprintf(stderr,"ERROR: Failure to read %s\n", optarg);
-					return 1;
+					fprintf(stderr,"ERROR: Failure to open %s\n", optarg);
+					return 202;
 				}
 				strcpy(path, optarg);
 				break;
@@ -69,43 +69,58 @@ int main (int argc, char **argv) {
 				break;
 			case '?':
 				fprintf(stderr,"Unknown option: %c\n", optopt);
-				return 1;
+				return 205;
 		}
 	}
-	if(in==NULL || out==NULL) {
-		fprintf(stderr, "ERROR: No input/output file given. Please refer to help (-h)\n");
-		return 1;
+	if(in==NULL) {
+		fprintf(stderr, "ERROR: No input file given. Please refer to help (-h)\n");
+		if(out!=NULL)
+			fclose(out);
+		return 203;
+	} else if(out == NULL) {
+		fprintf(stderr, "ERROR: No output file given. Please refer to help (-h)\n");
+                if(in!=NULL)
+			fclose(in);
+		return 204;
 	}
 	if(decomp) {
 		heap_t original_heap;
 		if(VERBOSE)
 			fprintf(stderr,"MAIN.C: Beginning the decompression process...\n");
-	        if( (original_heap = decompress(in, password, out, VERBOSE)) != NULL) {
-			L = original_heap->amount; /* reding symbol length from first node */
-			heap = original_heap; /* removing the first node */
-			original_heap = original_heap->next;
-			free(heap);
+	        original_heap = decompress(in, password, out, VERBOSE);
+		L = original_heap->amount; /* reding symbol length from first node */
+		if(L>200) { /* There were issues with decompresion */
+			free(original_heap);
+			fclose(in);
 			fclose(out);
-			out = fopen(path, "rb");
-			heap = count_symbols(out, L, 0);
-			while(heap != NULL && original_heap != NULL) {
-				heap_t heap_tmp = heap;
-				if(heap->symbol.numeric != original_heap->symbol.numeric || heap->amount != original_heap->amount)
-					break;
-				heap = heap->next;
-				free(heap_tmp);
-				heap_tmp = original_heap;
-				original_heap = original_heap->next;
-				free(heap_tmp);
-			}
-			if(heap != NULL || original_heap != NULL)
-				fprintf(stderr, "ERROR: The compressed file was damaged!\n");
-			if(heap != NULL)
-				free_heap_t(heap);
-			if(original_heap != NULL)
-				free_heap_t(original_heap);
-			
+			return L;
 		}
+		heap = original_heap; /* removing the first node */
+		original_heap = original_heap->next;
+		free(heap);
+		fclose(out);
+		out = fopen(path, "rb");
+		heap = count_symbols(out, L, 0);
+		while(heap != NULL && original_heap != NULL) {
+			heap_t heap_tmp = heap;
+			if(heap->symbol.numeric != original_heap->symbol.numeric || heap->amount != original_heap->amount)
+				break;
+			heap = heap->next;
+			free(heap_tmp);
+			heap_tmp = original_heap;
+			original_heap = original_heap->next;
+			free(heap_tmp);
+		}
+		if(heap != NULL || original_heap != NULL) {
+			fprintf(stderr, "ERROR: The compressed file was damaged!\n");
+			fclose(in);
+			fclose(out);
+			return 210;
+		}
+		if(heap != NULL)
+			free_heap_t(heap);
+		if(original_heap != NULL)
+			free_heap_t(original_heap);	
 	} else {
 		if(VERBOSE)
 			fprintf(stderr, "MAIN.C: Beginning the compression process...\n");
@@ -113,7 +128,7 @@ int main (int argc, char **argv) {
 		if(heap == NULL) {
 			fclose(in);
 			fclose(out);
-			return 1;
+			return 206;
 		}
 		dictionary = make_dictionary(heap);
 		heap = organize_heap(heap, VERBOSE);

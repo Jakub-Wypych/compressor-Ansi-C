@@ -31,13 +31,25 @@ heap_t copy_heap(heap_t heap) {
 	return heap_copy;
 }
 
+/* Frees memory and sets the exit state */
+void exit_failure(bit_work_t bitwork1, bit_work_t bitwork2, FILE *file, heap_t *heap, int exit_state) {
+	free(bitwork1);
+	free(bitwork2);
+	fclose(file);
+	remove("decompressed_tmp");
+	if(*heap!=NULL)
+		free_heap_t(*heap);
+	*heap = malloc(sizeof(*heap));
+	(*heap)->amount = exit_state; /* we'll store the exit state here */
+}
+
 /* Reads the 'in' file and decoompresses it into 'out' file,
  * in: compressed file,
  * password: password,,
  * out: decompressed file,
  * VERBOSE: DEBUG. */
 heap_t decompress (FILE *in, char password, FILE *out, int VERBOSE) {
-        FILE *out_tmp = fopen("tmp/decompressed_tmp", "wb"); /* we first write into a tmp FILE, later on we'll copy its contents to the out FILE */
+        FILE *out_tmp = fopen("decompressed_tmp", "wb"); /* we first write into a tmp FILE, later on we'll copy its contents to the out FILE */
 	unsigned char ident = 0x00; /* identifier */
 	unsigned char stray_bits = 0; /* for reomoving added bits on the end of FILE */
 	char code[MAX_CODE]; /* for decrypting the infile */
@@ -53,20 +65,25 @@ heap_t decompress (FILE *in, char password, FILE *out, int VERBOSE) {
 	csheet_t csheet, csheet_tmp;
 	if(VERBOSE)
                 fprintf(stderr, "DECOMPRESSOR.C: Beginning to decompress...\n");
+	heap->next = NULL;
 	/* reading identifier */
 	fbit_read(&found_symbol, 8, bitread);
 	ident = found_symbol.byte[1];
-	if(ident<<7 == 0) { /* checking if file is compressed */
+	if((ident&0x01) == 0) { /* checking if file is compressed */
                 fprintf(stderr, "ERROR: The infile is not copmressed!\n");
-                return NULL;
+		exit_failure(bitread, bitwrite, out_tmp, &heap, 209);
+                return heap;
         }
 	stray_bits = ident>>5;
 	if( (ident&0x06) == 6 )
 		bit = 16;
 	else if( (ident&0x06) == 2 )
 		bit = 12;
-	if((ident&0x08) && password == 0x00 ) /* is password protected and we don't have a password */
+	if((ident&0x10) == 16 && password == 0x00 ) { /* is password protected and we don't have a password */
 		fprintf(stderr, "ERROR: File is password protected!\n");
+		exit_failure(bitread, bitwrite, out_tmp, &heap, 207);
+                return heap;
+	}
 	/* adding first node to heap */
 	fbit_read(&found_symbol, bit, bitread); /* reading symbol */
 	fbit_read(&found_prob, 4, bitread); /* reading probability */
@@ -84,16 +101,14 @@ heap_t decompress (FILE *in, char password, FILE *out, int VERBOSE) {
 		if(fbit_read(&found_prob, 4, bitread) != 4) /* reading prob */ {
 			/* we've reached the end of the file,
 			 * it either means the file is damaged or we have the wrong password */
-			if(password != 0x00) /* wrong password */
+			if(password != 0x00) { /* wrong password */
 				fprintf(stderr, "ERROR: The given password is incorrect!\n");
-			else
-				fprintf(stderr, "ERROR: The compressed file is either damaged or not a compressed file!\n");
-			free_heap_t(heap);
-			free(bitread);
-			free(bitwrite);
-			fclose(out_tmp);
-			remove("tmp/decompressed_tmp");
-			return NULL;
+				exit_failure(bitread, bitwrite, out_tmp, &heap, 208);
+			} else {
+				fprintf(stderr, "ERROR: The compressed file is damaged!\n");
+				exit_failure(bitread, bitwrite, out_tmp, &heap, 210);
+			}
+			return heap;
 		}
 		prob = (found_prob.byte[1]>>4);
 		if(prob > 9) { /* checking for repeating prob */
@@ -163,7 +178,7 @@ heap_t decompress (FILE *in, char password, FILE *out, int VERBOSE) {
 	/* copying contents of out_tmp into out, without the additional bytes */
 	outfile_size = ftell(out_tmp) - (stray_bytes/8);
 	fclose(out_tmp);
-	out_tmp = fopen("tmp/decompressed_tmp", "rb");
+	out_tmp = fopen("decompressed_tmp", "rb");
 	while(outfile_size != 0) {
 		unsigned char buf;
 		fread(&buf, 1, 1, out_tmp);
@@ -174,7 +189,7 @@ heap_t decompress (FILE *in, char password, FILE *out, int VERBOSE) {
 	free(bitread);
 	free(bitwrite);
 	free_csheet_t(csheet);
-	remove("tmp/decompressed_tmp");
+	remove("decompressed_tmp");
         if(VERBOSE)
                 fprintf(stderr, "DECOMPRESSOR.C: Finished decompressing!\n");
 	heap_copy->amount = bit; /* in first node we save the 8, 12, 16 bit reading */

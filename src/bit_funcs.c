@@ -86,7 +86,7 @@ void fbit_write(char *transf, int bit_amount, bit_work_t bitwork) {
 		bitwork->buf.all>>=(32-(8+bitwork->buf_size));
 		bit_amount -= 8;
 	}
-	if(bit_amount==0) /* we've wrote all that was needed (bit_amount is dividable by 8 */
+	if(bit_amount==0) /* we've wrote all that was needed (bit_amount is dividable by 8) */
 		return;
 	/* we add leftoverbits to bitwork */
 	bitwork->buf.all<<=8;
