@@ -5,7 +5,7 @@
 #include "bit_funcs.h"
 #include "counter.h" /* heap_t */
 #include "csheet.h" /* csheet_t */
-#include "compressor.h" /* dictionary_t */
+#include "dictionary.h" /* dictionary_t */
 
 /* Prints in stderr heap_t list */
 void read_heap (heap_t list) {

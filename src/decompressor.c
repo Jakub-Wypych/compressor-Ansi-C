@@ -163,17 +163,19 @@ heap_t decompress (FILE *in, char password, FILE *out, int VERBOSE) {
 		}
 	}
 	/* removing stray bits */
-	byte_pos = 0;
+	byte_pos = 1;
 	/* calculating how many additional bytes were added */
-	for(i=0; i<=stray_bits;i++) {
+	for(i=1; i<=stray_bits;i++) {
 		csheet_tmp = csheet;
 		while(csheet_tmp != NULL) {
-			if( strcmp(code, csheet_tmp->code) == 0 && csheet_tmp->array_pos == 0 && csheet_tmp->byte_pos == byte_pos++) {
+			if( strcmp(code, csheet_tmp->code) == 0 && csheet_tmp->array_pos == 0 && csheet_tmp->byte_pos == byte_pos) {
 				stray_bytes += bit;
 				byte_pos = 0;
+				break;
 			}
 			csheet_tmp = csheet_tmp->next;
 		}
+		byte_pos++;
 	}
 	/* copying contents of out_tmp into out, without the additional bytes */
 	outfile_size = ftell(out_tmp) - (stray_bytes/8);

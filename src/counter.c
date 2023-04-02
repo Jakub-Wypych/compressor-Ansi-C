@@ -46,7 +46,8 @@ heap_t count_symbols (FILE *in, int bit, int VERBOSE) {
         data_t found_symbol;
 	bit_work_t bitread = init_bitwork(in, 0x00);
         list->next = NULL;
-	list->symbol.numeric = 0; /* !this is bad fix later, get symbol and make it the first node */
+	list->symbol.numeric = 0;
+	list->amount = 0;
 	if(VERBOSE)
 		fprintf(stderr, "COUNTER.C: Starting to count symbols...\n");
 	/* checking if file can be read per 12 or 16 bits */
@@ -67,9 +68,11 @@ heap_t count_symbols (FILE *in, int bit, int VERBOSE) {
 	if(VERBOSE>1) {
 		fprintf(stderr, "COUNTER.C: Unsorted list:"); read_heap(list->next); }
 	sort_list(list);
-        tmp = list;
-        list = list->next;
-        free(tmp);
+	if(list->amount == 0) { /* There wasn't a NULL symbol in file, we're freeing the first node in list */
+        	tmp = list;
+        	list = list->next;
+        	free(tmp);
+	}
 	tmp = list;
 	if(VERBOSE>1) {
 		fprintf(stderr, "COUNTER.C: Sorted list:"); read_heap(list); }
