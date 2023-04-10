@@ -16,7 +16,7 @@
 #define PATH_MAX 255
 
 int main (int argc, char **argv) {
-	char path[PATH_MAX], password = 0x00;
+	char outpath[PATH_MAX], inpath[PATH_MAX], password = 0x00;
 	int i;
 	int opt, VERBOSE = 0, L = 8, decomp = 0;
 	FILE *in = NULL, *out = NULL;
@@ -46,7 +46,7 @@ int main (int argc, char **argv) {
 					password = 0x01;
 				break;
 			case 'v':
-				VERBOSE = atoi(optarg) == 3 ? 3 : atoi(optarg) == 2 ? 2 : 1;
+				VERBOSE = atoi(optarg) == 3 ? 3 : atoi(optarg) == 2 ? 2 : atoi(optarg) == 1 ? 1 : 0;
 				/* 2 additionally prints csheet and 3 also prints LIST with added blank nodes */
 				break;
 			case 'i': /* (i)nput file */
@@ -55,6 +55,7 @@ int main (int argc, char **argv) {
 					fprintf(stderr,"ERROR: Failure to open %s\n", optarg);
 					return 201;
 				}
+				strcpy(inpath, optarg);
 				break;
 			case 'o': /* (o)utput file */
 				out = fopen(optarg, "wb");
@@ -62,13 +63,13 @@ int main (int argc, char **argv) {
 					fprintf(stderr,"ERROR: Failure to open %s\n", optarg);
 					return 202;
 				}
-				strcpy(path, optarg);
+				strcpy(outpath, optarg);
 				break;
 			case 'L': /* (L)ength of binary reading */
 				L = atoi(optarg) == 3 ? 16 : atoi(optarg) == 2 ? 12 : 8;
 				break;
 			case '?':
-				fprintf(stderr,"Unknown option: %c\n", optopt);
+				fprintf(stderr,"ERROR with option: %c\n", optopt);
 				return 205;
 		}
 	}
@@ -82,6 +83,11 @@ int main (int argc, char **argv) {
                 if(in!=NULL)
 			fclose(in);
 		return 204;
+	} else if( strcmp(inpath, outpath) == 0 ) {
+		fprintf(stderr, "ERROR: Input and output files are the same.\n");
+		fclose(in);
+		fclose(out);
+		return 211;
 	}
 	if(decomp) {
 		heap_t original_heap;
@@ -99,7 +105,7 @@ int main (int argc, char **argv) {
 		original_heap = original_heap->next;
 		free(heap);
 		fclose(out);
-		out = fopen(path, "rb");
+		out = fopen(outpath, "rb");
 		heap = count_symbols(out, L, 0);
 		while(heap != NULL && original_heap != NULL) {
 			heap_t heap_tmp = heap;

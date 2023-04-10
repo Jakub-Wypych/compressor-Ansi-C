@@ -79,8 +79,7 @@ void compress(dictionary_t dictionary, int bit, csheet_t csheet, FILE *in, FILE 
 	if(password != 0x00)
 		ident |= 0x08;
 	rewind(out);
-	ident^=bitwrite->password;
-	fwrite(&ident, 1, 1, out);
+	fwrite(&ident, 1, 1, out); /* ident will not be compressed */
 	free(bitread);
 	free(bitwrite);
 	if(VERBOSE)

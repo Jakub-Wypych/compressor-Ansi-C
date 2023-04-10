@@ -7,9 +7,8 @@ gen_uncompressed_file:
 	rm data/gen
 
 file_compare:
-	cc -Wall -ansi -pedantic test/cmp_files.c -o test/compare
-	test/compare data/uncompressed data/decompressed
-	rm test/compare
+	cmp data/uncompressed data/decompressed
+	@echo Files are the same :D
 
 size_compare:
 	cc -Wall -ansi -pedantic test/cmp_size.c -o test/compare
@@ -17,10 +16,10 @@ size_compare:
 	rm test/compare
 
 compress_no_opt: all
-	bin/compressor -i data/uncompressed -o data/compressed
+	bin/compressor -i $(in) -o $(out)
 
 decompress_no_opt: all
-	bin/compressor -i data/compressed -o data/decompressed -x
+	bin/compressor -i $(in) -o $(out) -x
 
 help: all
 	bin/compressor -h
@@ -50,9 +49,8 @@ test_memory_leak_decompress: all
 lorem_ipsum: all
 	bin/compressor -i data/lorem_ipsum -o data/compressed -v 1 -L 1
 	bin/compressor -i data/compressed -o data/decompressed -v 1 -x
-	cc -Wall -ansi -pedantic test/cmp_files.c -o test/compare
-	test/compare data/lorem_ipsum data/decompressed
-	rm test/compare
+	cmp data/lorem_ipsum data/decompressed
+	@echo Files are the same :D
 	cc -Wall -ansi -pedantic test/cmp_size.c -o test/compare
 	test/compare data/lorem_ipsum data/compressed
 	rm test/compare
@@ -79,3 +77,6 @@ test_error_207: all
 test_error_208: all
 	bin/compressor -i data/uncompressed -o data/compressed -p xxx
 	valgrind bin/compressor -i data/compressed -o data/decompressed -p yyy -x -v 1
+
+test_error_211: all
+	bin/compressor -i data/uncompressed -o data/uncompressed

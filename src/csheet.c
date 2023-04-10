@@ -18,7 +18,7 @@ void cmprs_list(char *code, heap_t pos, csheet_t csheet, int depth) {
                 byte_pos -=8;
                 array_pos++;
         }
-	if(pos->symbol.numeric != 0) {
+	if(pos->passage_0 == NULL && pos->passage_1 == NULL) {
 		csheet_t tmp = csheet;
 		csheet_t new_node = malloc(sizeof(*new_node));
 		new_node->next = NULL;
@@ -53,6 +53,8 @@ csheet_t make_cmprs_list(heap_t heap, int VERBOSE) {
 	        csheet->symbol = heap->symbol;
 		code[0]='0';
                 strcpy(csheet->code, code);
+		csheet->array_pos = 0;
+		csheet->byte_pos = 1;
 	        if(VERBOSE)
         	        fprintf(stderr,"CSHEET.C: Finished making a one node large compression sheet!\n");
         	return csheet;

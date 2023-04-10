@@ -17,7 +17,7 @@ int main (int argc, char **argv) {
 	srand(time(NULL));
 	how_many_symbols = (int) rand()%151; /* we can have 0 to 150 diffrent symbols */
 	for(i=0;i<=how_many_symbols;i++) {
-		symbol_number = (int) rand()%254+1; /* we can have a symbol number from 1 to 255 */
+		symbol_number = (int) rand()%255+1; /* we can have a symbol number from 1 to 255 */
 		how_many_times = (int) rand()%3+1; /* it can appear from 1 to 3 times */
 		for(j=0;j<=how_many_times;j++)
 			fprintf(out,"%c",symbol_number);

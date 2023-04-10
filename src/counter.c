@@ -66,7 +66,7 @@ heap_t count_symbols (FILE *in, int bit, int VERBOSE) {
 	}
 	free(bitread);
 	if(VERBOSE>1) {
-		fprintf(stderr, "COUNTER.C: Unsorted list:"); read_heap(list->next); }
+		fprintf(stderr, "COUNTER.C: Unsorted list:"); read_heap(list); }
 	sort_list(list);
 	if(list->amount == 0) { /* There wasn't a NULL symbol in file, we're freeing the first node in list */
         	tmp = list;

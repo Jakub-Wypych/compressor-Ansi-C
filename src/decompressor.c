@@ -67,8 +67,7 @@ heap_t decompress (FILE *in, char password, FILE *out, int VERBOSE) {
                 fprintf(stderr, "DECOMPRESSOR.C: Beginning to decompress...\n");
 	heap->next = NULL;
 	/* reading identifier */
-	fbit_read(&found_symbol, 8, bitread);
-	ident = found_symbol.byte[1];
+	fread(&ident, 1, 1, in); /* ident isn't compressed so we don't try to decrypt */
 	if((ident&0x01) == 0) { /* checking if file is compressed */
                 fprintf(stderr, "ERROR: The infile is not copmressed!\n");
 		exit_failure(bitread, bitwrite, out_tmp, &heap, 209);
@@ -79,7 +78,7 @@ heap_t decompress (FILE *in, char password, FILE *out, int VERBOSE) {
 		bit = 16;
 	else if( (ident&0x06) == 2 )
 		bit = 12;
-	if((ident&0x10) == 16 && password == 0x00 ) { /* is password protected and we don't have a password */
+	if( ((ident&0x08) == 8) && password == 0x00 ) { /* is password protected and we don't have a password */
 		fprintf(stderr, "ERROR: File is password protected!\n");
 		exit_failure(bitread, bitwrite, out_tmp, &heap, 207);
                 return heap;
